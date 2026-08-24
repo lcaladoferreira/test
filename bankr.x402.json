@@ -1,0 +1,10 @@
+{
+  "services": {
+    "youtube-transcript": {
+      "description": "Extract a clean YouTube transcript for AI/RAG workflows. Pay only per request.",
+      "price": "0.004",
+      "method": "POST",
+      "path": "/youtube-transcript"
+    }
+  }
+}
