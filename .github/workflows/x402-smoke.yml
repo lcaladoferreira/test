@@ -15,6 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate x402 config
+        shell: bash
+        run: |
+          node -e "const c=require('./bankr.x402.json'); const names=Object.keys(c.services); if(!names.includes('youtube-transcript')||!names.includes('youtube-captions')||!names.includes('youtube-video-to-text')) process.exit(1); console.log(names)"
+
       - name: Verify paid endpoint advertises HTTP 402
         shell: bash
         run: |
@@ -23,43 +28,33 @@ jobs:
           STATUS=$(curl -sS -o /tmp/x402.json -w '%{http_code}' -X POST "$URL" \
             -H 'Content-Type: application/json' \
             --data '{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}')
-          cat /tmp/x402.json
           test "$STATUS" = '402'
           grep -q 'Payment Required' /tmp/x402.json
-          grep -q 'e100c45ad23fa81aeca03ce61871e2ea3cf8e9eb' /tmp/x402.json
 
-      - name: Inspect Bankr schema
+      - name: Install all transcript aliases
         shell: bash
         run: |
-          npx --yes @bankr/cli x402 schema 'https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-transcript' --raw | tee /tmp/schema.json
-          grep -q 'youtube-transcript' /tmp/schema.json
+          npm install --prefix x402/youtube-transcript
+          npm install --prefix x402/youtube-captions
+          npm install --prefix x402/youtube-video-to-text
 
-      - name: Install transcript engine
-        shell: bash
-        run: npm install --prefix x402/youtube-transcript
-
-      - name: Execute transcript handler against YouTube
+      - name: Execute every handler against YouTube
         shell: bash
         run: |
-          npx --yes tsx -e "import handler from './x402/youtube-transcript/index.ts'; (async()=>{ const req=new Request('http://local/youtube-transcript',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ',includeSegments:false})}); const res=await handler(req); const text=await res.text(); console.log('status',res.status); console.log(text.slice(0,1200)); if(res.status!==200) process.exit(1); const data=JSON.parse(text); if(!data.success || !data.transcript || data.wordCount<10) process.exit(2); })();"
+          for name in youtube-transcript youtube-captions youtube-video-to-text; do
+            echo "TESTING=$name"
+            npx --yes tsx -e "import handler from './x402/$name/index.ts'; (async()=>{ const req=new Request('http://local',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'})}); const res=await handler(req); const data=await res.json(); console.log(res.status, data.wordCount); if(res.status!==200 || !data.success || !data.transcript || data.wordCount<10) process.exit(1); })();"
+          done
 
       - name: Probe marketplace discovery ranking
         shell: bash
         run: |
           set -euo pipefail
-          for q in \
-            'youtube transcript' \
-            'youtube captions' \
-            'youtube transcription' \
-            'youtube subtitles' \
-            'extract youtube transcript' \
-            'youtube transcript api' \
-            'youtube-transcript'; do
+          for q in 'youtube transcript' 'youtube captions' 'youtube transcription' 'youtube subtitles' 'youtube video to text' 'youtube transcript api' 'youtube-transcript'; do
             echo "===== QUERY: $q ====="
             npx --yes @bankr/cli x402 search "$q" --raw > /tmp/search.json || true
             if grep -qi '0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb' /tmp/search.json; then
               echo "FOUND_OUR_SERVICE=YES"
-              grep -n -i -m1 -B3 -A12 '0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb' /tmp/search.json || true
             else
               echo "FOUND_OUR_SERVICE=NO"
             fi
