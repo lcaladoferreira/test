@@ -1,0 +1,44 @@
+name: x402 Smoke Test
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify paid endpoint advertises HTTP 402
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-transcript'
+          STATUS=$(curl -sS -o /tmp/x402.json -w '%{http_code}' -X POST "$URL" \
+            -H 'Content-Type: application/json' \
+            --data '{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}')
+          cat /tmp/x402.json
+          test "$STATUS" = '402'
+          grep -q 'Payment Required' /tmp/x402.json
+          grep -q 'e100c45ad23fa81aeca03ce61871e2ea3cf8e9eb' /tmp/x402.json
+
+      - name: Inspect Bankr schema
+        shell: bash
+        run: |
+          npx --yes @bankr/cli x402 schema 'https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-transcript' --raw | tee /tmp/schema.json
+          grep -q 'youtube-transcript' /tmp/schema.json
+
+      - name: Verify marketplace discovery
+        shell: bash
+        run: |
+          npx --yes @bankr/cli x402 search 'youtube transcript' --raw | tee /tmp/search.json
+          grep -q 'youtube-transcript' /tmp/search.json
+
+      - name: Execute transcript handler against YouTube
+        shell: bash
+        run: |
+          npx --yes tsx -e "import handler from './x402/youtube-transcript/index.ts'; (async()=>{ const req=new Request('http://local/youtube-transcript',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ',includeSegments:false})}); const res=await handler(req); const text=await res.text(); console.log('status',res.status); console.log(text.slice(0,1200)); if(res.status!==200) process.exit(1); const data=JSON.parse(text); if(!data.success || !data.transcript || data.wordCount<10) process.exit(2); })();"
