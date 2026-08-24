@@ -34,6 +34,10 @@ jobs:
           npx --yes @bankr/cli x402 schema 'https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-transcript' --raw | tee /tmp/schema.json
           grep -q 'youtube-transcript' /tmp/schema.json
 
+      - name: Install transcript engine
+        shell: bash
+        run: npm install --prefix x402/youtube-transcript
+
       - name: Execute transcript handler against YouTube
         shell: bash
         run: |
