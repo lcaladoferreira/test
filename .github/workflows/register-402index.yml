@@ -1,0 +1,29 @@
+name: Register x402 services on 402 Index
+
+on:
+  push:
+    paths:
+      - '.github/workflows/register-402index.yml'
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Submit services
+        shell: bash
+        run: |
+          set -euo pipefail
+          submit() {
+            local name="$1"
+            local url="$2"
+            echo "Submitting: $name"
+            curl -sS -X POST 'https://402index.io/api/v1/register' \
+              -H 'Content-Type: application/json' \
+              --data "{\"url\":\"$url\",\"name\":\"$name\",\"protocol\":\"x402\",\"http_method\":\"POST\",\"probe_body\":\"{\\\"url\\\":\\\"https://www.youtube.com/watch?v=dQw4w9WgXcQ\\\"}\"}" \
+              | tee /tmp/last-response.json
+            echo
+          }
+
+          submit 'YouTube Transcript API' 'https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-transcript'
+          submit 'YouTube Captions API' 'https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-captions'
+          submit 'YouTube Video to Text API' 'https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-video-to-text'
