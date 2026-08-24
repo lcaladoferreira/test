@@ -43,10 +43,24 @@ jobs:
         run: |
           npx --yes tsx -e "import handler from './x402/youtube-transcript/index.ts'; (async()=>{ const req=new Request('http://local/youtube-transcript',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ',includeSegments:false})}); const res=await handler(req); const text=await res.text(); console.log('status',res.status); console.log(text.slice(0,1200)); if(res.status!==200) process.exit(1); const data=JSON.parse(text); if(!data.success || !data.transcript || data.wordCount<10) process.exit(2); })();"
 
-      - name: Verify exact marketplace discovery
-        continue-on-error: true
+      - name: Probe marketplace discovery ranking
         shell: bash
         run: |
-          npx --yes @bankr/cli x402 search 'youtube transcript' --raw | tee /tmp/search.json
-          grep -qi '0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb' /tmp/search.json
-          grep -q 'youtube-transcript' /tmp/search.json
+          set -euo pipefail
+          for q in \
+            'youtube transcript' \
+            'youtube captions' \
+            'youtube transcription' \
+            'youtube subtitles' \
+            'extract youtube transcript' \
+            'youtube transcript api' \
+            'youtube-transcript'; do
+            echo "===== QUERY: $q ====="
+            npx --yes @bankr/cli x402 search "$q" --raw > /tmp/search.json || true
+            if grep -qi '0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb' /tmp/search.json; then
+              echo "FOUND_OUR_SERVICE=YES"
+              grep -n -i -m1 -B3 -A12 '0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb' /tmp/search.json || true
+            else
+              echo "FOUND_OUR_SERVICE=NO"
+            fi
+          done
