@@ -1,5 +1,8 @@
 {
   "name": "youtube-transcript-x402",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@hallelx/youtube-transcript": "latest"
+  }
 }
