@@ -3,7 +3,7 @@
   "currency": "USDC",
   "services": {
     "youtube-transcript": {
-      "description": "YouTube transcript API for AI agents. Extract clean transcript, captions or subtitles from any YouTube URL or video ID. Choose manual or auto-generated captions, select language, optionally translate, and return JSON, plain text or SRT for RAG, research, summarization and automation.",
+      "description": "YouTube transcript API for AI agents. Extract clean transcript, captions or subtitles from any YouTube URL or video ID. Choose manual or auto-generated captions, select language, optionally translate, and return JSON, plain text or SRT for RAG, research, summarization and automation. Payment settles only after a successful response, so failed/unavailable transcripts are not charged.",
       "price": "0.004",
       "methods": ["POST"],
       "category": "ai",
@@ -14,7 +14,7 @@
       }
     },
     "youtube-captions": {
-      "description": "YouTube captions and subtitle extractor for AI agents. Get clean captions, subtitles or transcript from a YouTube URL or video ID with JSON, plain text or SRT-ready output, optional timestamps and language selection.",
+      "description": "YouTube captions and subtitle extractor for AI agents. Get clean captions, subtitles or transcript from a YouTube URL or video ID with JSON, plain text or SRT-ready output, optional timestamps and language selection. Payment settles only after a successful response, so unavailable captions are not charged.",
       "price": "0.004",
       "methods": ["POST"],
       "category": "ai",
@@ -25,7 +25,7 @@
       }
     },
     "youtube-video-to-text": {
-      "description": "YouTube video-to-text API. Convert a YouTube video URL or video ID into clean transcript text with JSON, plain text or SRT-ready output. Low-cost endpoint for AI agents, RAG pipelines, research, indexing and automation.",
+      "description": "YouTube video-to-text API. Convert a YouTube video URL or video ID into clean transcript text with JSON, plain text or SRT-ready output. Low-cost endpoint for AI agents, RAG pipelines, research, indexing and automation. Payment settles only after a successful response, so failed extractions are not charged.",
       "price": "0.004",
       "methods": ["POST"],
       "category": "ai",
