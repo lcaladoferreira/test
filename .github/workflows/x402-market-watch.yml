@@ -22,6 +22,14 @@ jobs:
             echo
           done
 
+      - name: Check 402 Index x402 opportunities
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '===== X402 OPPORTUNITIES ====='
+          curl -sS 'https://402index.io/api/v1/opportunities?protocol=x402' || true
+          echo
+
       - name: Check Bankr discovery
         shell: bash
         run: |
