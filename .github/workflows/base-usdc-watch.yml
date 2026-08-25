@@ -1,17 +1,13 @@
-name: Base USDC Wallet Monitor
+name: Base USDC Settlement Wallet Diagnostic
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/base-usdc-watch.yml'
 
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: Check recent incoming USDC on Base
+      - name: Inspect shared Bankr settlement wallet activity without revenue attribution
         shell: bash
         run: |
           set -euo pipefail
@@ -26,7 +22,7 @@ jobs:
 
           def rpc(method, params):
               data=json.dumps({'jsonrpc':'2.0','id':1,'method':method,'params':params}).encode()
-              req=urllib.request.Request(RPC,data=data,headers={'content-type':'application/json','user-agent':'github-actions-usdc-watch'})
+              req=urllib.request.Request(RPC,data=data,headers={'content-type':'application/json','user-agent':'github-actions-usdc-diagnostic'})
               with urllib.request.urlopen(req, timeout=30) as r:
                   out=json.load(r)
               if 'error' in out:
@@ -34,7 +30,6 @@ jobs:
               return out['result']
 
           latest=int(rpc('eth_blockNumber',[]),16)
-          # ~24h on Base at ~2 sec/block, split into smaller chunks.
           start=max(0, latest-45000)
           logs=[]
           step=4000
@@ -56,13 +51,12 @@ jobs:
                   'block': block,
               })
           rows.sort(key=lambda x:x['block'])
+          print('SETTLEMENT_WALLET_ACTIVITY_ONLY=true')
+          print('DO_NOT_ATTRIBUTE_TO_OUR_SERVICES=true')
           print('LATEST_BLOCK', latest)
           print('WINDOW_START_BLOCK', start)
           print('INCOMING_USDC_COUNT', len(rows))
           for r in rows:
               print(json.dumps(r, separators=(',',':')))
-          plausible=[r for r in rows if abs((r['amount_usdc']/0.004)-round(r['amount_usdc']/0.004)) < 1e-9 and r['amount_usdc']>0]
-          print('PLAUSIBLE_X402_COUNT',len(plausible))
-          for r in plausible:
-              print('PLAUSIBLE',json.dumps(r,separators=(',',':')))
+          print('Revenue attribution must use Bankr endpoint-level revenue reporting, not wallet deposit amounts.')
           PY
