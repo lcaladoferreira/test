@@ -14,7 +14,7 @@ jobs:
         run: |
           set -euo pipefail
           WALLET_SERVICE='0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
-          for q in 'youtube transcript' 'youtube captions' 'youtube transcription' 'youtube subtitles' 'video transcript' 'youtube video to text' 'youtube transcript api'; do
+          for q in 'youtube transcript' 'youtube captions' 'youtube transcription' 'youtube subtitles' 'video transcript' 'youtube video to text' 'youtube transcript api' 'cheap youtube transcript' 'youtube transcribe'; do
             echo "===== $q ====="
             npx --yes @bankr/cli x402 search "$q" --raw > /tmp/search.json || true
             if grep -qi "$WALLET_SERVICE" /tmp/search.json; then
@@ -32,6 +32,9 @@ jobs:
           set -euo pipefail
           SERVICES=(
             youtube-transcript
+            youtube-transcript-basic
+            youtube-transcribe
+            youtube-transcript-api
             youtube-captions
             youtube-subtitles
             youtube-video-to-text
