@@ -1,6 +1,7 @@
 name: Register x402 services on 402 Index
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - '.github/workflows/register-402index.yml'
@@ -24,6 +25,11 @@ jobs:
             echo
           }
 
-          submit 'YouTube Transcript API' 'https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-transcript'
-          submit 'YouTube Captions API' 'https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-captions'
-          submit 'YouTube Video to Text API' 'https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-video-to-text'
+          BASE='https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
+          submit 'YouTube Transcript API' "$BASE/youtube-transcript"
+          submit 'YouTube Captions API' "$BASE/youtube-captions"
+          submit 'YouTube Subtitles API' "$BASE/youtube-subtitles"
+          submit 'YouTube Video to Text API' "$BASE/youtube-video-to-text"
+          submit 'Video Transcript API' "$BASE/video-transcript"
+          submit 'YouTube Metadata API' "$BASE/youtube-metadata"
+          submit 'YouTube Transcript Batch API' "$BASE/youtube-transcript-batch"
