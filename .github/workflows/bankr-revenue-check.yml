@@ -2,9 +2,8 @@ name: Bankr Revenue Check
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - '.github/workflows/bankr-revenue-check.yml'
+  schedule:
+    - cron: '37 */6 * * *'
 
 jobs:
   check:
@@ -15,7 +14,7 @@ jobs:
         run: |
           set -euo pipefail
           WALLET_SERVICE='0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
-          for q in 'youtube transcript' 'youtube captions' 'youtube transcription' 'youtube subtitles' 'youtube video to text' 'youtube transcript api'; do
+          for q in 'youtube transcript' 'youtube captions' 'youtube transcription' 'youtube subtitles' 'video transcript' 'youtube video to text' 'youtube transcript api'; do
             echo "===== $q ====="
             npx --yes @bankr/cli x402 search "$q" --raw > /tmp/search.json || true
             if grep -qi "$WALLET_SERVICE" /tmp/search.json; then
@@ -25,34 +24,28 @@ jobs:
             fi
           done
 
-      - name: Check Base USDC incoming transfers
+      - name: Revenue by Bankr endpoint
+        env:
+          BANKR_API_KEY: ${{ secrets.BANKR_API_KEY }}
         shell: bash
         run: |
           set -euo pipefail
-          WALLET='0x8AEE621035D93Deb3C0C1177fac252dC2dd501a0'
-          API="https://base.blockscout.com/api/v2/addresses/$WALLET/token-transfers?type=ERC-20"
-          curl -sS "$API" > /tmp/transfers.json
-          python - <<'PY'
-          import json
-          p='/tmp/transfers.json'
-          d=json.load(open(p))
-          items=d.get('items',[])
-          wallet='0x8aee621035d93deb3c0c1177fac252dc2dd501a0'
-          usdc='0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
-          found=[]
-          for x in items:
-              to=((x.get('to') or {}).get('hash') or '').lower()
-              token=((x.get('token') or {}).get('address_hash') or (x.get('token') or {}).get('address') or '').lower()
-              if to==wallet and token==usdc:
-                  found.append(x)
-          print('INCOMING_USDC_COUNT='+str(len(found)))
-          for x in found[:20]:
-              print(json.dumps({
-                  'timestamp': x.get('timestamp'),
-                  'tx_hash': x.get('transaction_hash'),
-                  'from': (x.get('from') or {}).get('hash'),
-                  'to': (x.get('to') or {}).get('hash'),
-                  'total': x.get('total'),
-                  'token': x.get('token')
-              }, default=str))
-          PY
+          SERVICES=(
+            youtube-transcript
+            youtube-captions
+            youtube-subtitles
+            youtube-video-to-text
+            video-transcript
+            youtube-metadata
+            youtube-transcript-batch
+          )
+          for service in "${SERVICES[@]}"; do
+            echo "===== REVENUE: $service ====="
+            npx --yes @bankr/cli x402 revenue "$service" || true
+          done
+
+      - name: Explain settlement-wallet exclusion
+        shell: bash
+        run: |
+          echo 'Revenue is intentionally measured with `bankr x402 revenue <service>`.'
+          echo 'The shared settlement wallet is not used as a product-revenue proxy because unrelated x402 services can settle to the same address.'
