@@ -1,0 +1,68 @@
+name: Base USDC Wallet Monitor
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/base-usdc-watch.yml'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check recent incoming USDC on Base
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, urllib.request, datetime
+
+          RPC='https://mainnet.base.org'
+          USDC='0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
+          WALLET='8aee621035d93deb3c0c1177fac252dc2dd501a0'
+          TOPIC0='0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+          TOPIC2='0x' + ('0'*24) + WALLET
+
+          def rpc(method, params):
+              data=json.dumps({'jsonrpc':'2.0','id':1,'method':method,'params':params}).encode()
+              req=urllib.request.Request(RPC,data=data,headers={'content-type':'application/json','user-agent':'github-actions-usdc-watch'})
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  out=json.load(r)
+              if 'error' in out:
+                  raise RuntimeError(out['error'])
+              return out['result']
+
+          latest=int(rpc('eth_blockNumber',[]),16)
+          # ~24h on Base at ~2 sec/block, split into smaller chunks.
+          start=max(0, latest-45000)
+          logs=[]
+          step=4000
+          for a in range(start, latest+1, step):
+              b=min(latest,a+step-1)
+              flt={'address':USDC,'fromBlock':hex(a),'toBlock':hex(b),'topics':[TOPIC0,None,TOPIC2]}
+              logs.extend(rpc('eth_getLogs',[flt]))
+
+          rows=[]
+          for log in logs:
+              amount=int(log['data'],16)/1_000_000
+              block=int(log['blockNumber'],16)
+              blk=rpc('eth_getBlockByNumber',[hex(block),False])
+              ts=int(blk['timestamp'],16)
+              rows.append({
+                  'time_utc': datetime.datetime.fromtimestamp(ts, datetime.timezone.utc).isoformat(),
+                  'amount_usdc': amount,
+                  'tx_hash': log['transactionHash'],
+                  'block': block,
+              })
+          rows.sort(key=lambda x:x['block'])
+          print('LATEST_BLOCK', latest)
+          print('WINDOW_START_BLOCK', start)
+          print('INCOMING_USDC_COUNT', len(rows))
+          for r in rows:
+              print(json.dumps(r, separators=(',',':')))
+          plausible=[r for r in rows if abs((r['amount_usdc']/0.004)-round(r['amount_usdc']/0.004)) < 1e-9 and r['amount_usdc']>0]
+          print('PLAUSIBLE_X402_COUNT',len(plausible))
+          for r in plausible:
+              print('PLAUSIBLE',json.dumps(r,separators=(',',':')))
+          PY
