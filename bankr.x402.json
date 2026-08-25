@@ -45,6 +45,17 @@
         "input": {"type":"object","properties":{"url":{"type":"string","description":"YouTube video URL."},"videoId":{"type":"string","description":"11-character YouTube video ID."}}},
         "output": {"type":"object","properties":{"success":{"type":"boolean"},"videoId":{"type":"string"},"videoUrl":{"type":"string"},"title":{"type":"string"},"channelName":{"type":"string"},"channelUrl":{"type":"string"},"thumbnailUrl":{"type":"string"},"thumbnailWidth":{"type":"integer"},"thumbnailHeight":{"type":"integer"},"providerName":{"type":"string"},"providerUrl":{"type":"string"},"fetchedAt":{"type":"string"}}}
       }
+    },
+    "youtube-transcript-batch": {
+      "description": "Batch YouTube transcript API for AI agents. Extract clean transcripts from 2 or 3 YouTube videos in one paid request, with per-video success/failure results and optional language selection. Built for RAG ingestion, research, summarization, dataset creation and automation workflows.",
+      "price": "0.010",
+      "methods": ["POST"],
+      "category": "ai",
+      "tags": ["youtube", "batch", "transcript", "rag", "automation"],
+      "schema": {
+        "input": {"type":"object","properties":{"videos":{"type":"array","description":"Array of 2 or 3 YouTube URLs/video IDs.","items":{"type":"string"}},"language":{"type":"string","description":"Optional preferred transcript language code applied to all videos."}}},
+        "output": {"type":"object","properties":{"success":{"type":"boolean"},"requested":{"type":"integer"},"successful":{"type":"integer"},"failed":{"type":"integer"},"results":{"type":"array","description":"Per-video transcript results with success/failure details."},"fetchedAt":{"type":"string"}}}
+      }
     }
   }
 }
