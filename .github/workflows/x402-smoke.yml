@@ -18,7 +18,7 @@ jobs:
       - name: Validate x402 config
         shell: bash
         run: |
-          node -e "const c=require('./bankr.x402.json'); const names=Object.keys(c.services); if(!names.includes('youtube-transcript')||!names.includes('youtube-captions')||!names.includes('youtube-video-to-text')) process.exit(1); console.log(names)"
+          node -e "const c=require('./bankr.x402.json'); const names=Object.keys(c.services); const req=['youtube-transcript','youtube-captions','youtube-subtitles','youtube-video-to-text','video-transcript']; for(const n of req) if(!names.includes(n)) process.exit(1); for(const n of req) if(c.services[n].price!=='0.004') process.exit(2); console.log(names)"
 
       - name: Verify paid endpoint advertises HTTP 402
         shell: bash
@@ -34,14 +34,14 @@ jobs:
       - name: Install all transcript aliases
         shell: bash
         run: |
-          npm install --prefix x402/youtube-transcript
-          npm install --prefix x402/youtube-captions
-          npm install --prefix x402/youtube-video-to-text
+          for name in youtube-transcript youtube-captions youtube-subtitles youtube-video-to-text video-transcript; do
+            npm install --prefix "x402/$name"
+          done
 
-      - name: Execute every handler against YouTube
+      - name: Execute every transcript handler against YouTube
         shell: bash
         run: |
-          for name in youtube-transcript youtube-captions youtube-video-to-text; do
+          for name in youtube-transcript youtube-captions youtube-subtitles youtube-video-to-text video-transcript; do
             echo "TESTING=$name"
             npx --yes tsx -e "import handler from './x402/$name/index.ts'; (async()=>{ const req=new Request('http://local',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'})}); const res=await handler(req); const data=await res.json(); console.log(res.status, data.wordCount); if(res.status!==200 || !data.success || !data.transcript || data.wordCount<10) process.exit(1); })();"
           done
@@ -50,7 +50,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for q in 'youtube transcript' 'youtube captions' 'youtube transcription' 'youtube subtitles' 'youtube video to text' 'youtube transcript api' 'youtube-transcript'; do
+          for q in 'youtube transcript' 'youtube captions' 'youtube transcription' 'youtube subtitles' 'video transcript' 'youtube video to text' 'youtube transcript api' 'youtube-transcript'; do
             echo "===== QUERY: $q ====="
             npx --yes @bankr/cli x402 search "$q" --raw > /tmp/search.json || true
             if grep -qi '0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb' /tmp/search.json; then
