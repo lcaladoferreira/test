@@ -1,0 +1,36 @@
+name: Deploy Bankr x402
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'bankr.x402.json'
+      - 'x402/**'
+      - '.github/workflows/deploy-bankr-x402.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy all x402 services to Bankr
+        env:
+          BANKR_API_KEY: ${{ secrets.BANKR_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${BANKR_API_KEY:-}" || { echo 'BANKR_API_KEY secret is missing'; exit 1; }
+          npx --yes @bankr/cli x402 deploy
+
+      - name: Verify live aliases advertise payment
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
+          for name in youtube-transcript youtube-captions youtube-subtitles youtube-video-to-text video-transcript; do
+            code=$(curl -sS -o /tmp/resp.json -w '%{http_code}' -X POST "$BASE/$name" -H 'content-type: application/json' --data '{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}')
+            echo "$name HTTP=$code"
+            test "$code" = '402'
+          done
