@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "agent_access": "allowed",
+  "authentication": "x402-payment",
+  "payment": {"network":"Base","asset":"USDC"},
+  "capabilities": [
+    {
+      "id": "youtube-transcript",
+      "description": "Get transcript text from a YouTube URL or video ID for RAG, research, summarization and automation.",
+      "method": "POST",
+      "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-transcript",
+      "price_usd": 0.004,
+      "agent_use": "allowed"
+    },
+    {
+      "id": "youtube-captions",
+      "description": "Extract YouTube captions or subtitles for agent workflows.",
+      "method": "POST",
+      "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-captions",
+      "price_usd": 0.004,
+      "agent_use": "allowed"
+    },
+    {
+      "id": "youtube-video-to-text",
+      "description": "Convert a YouTube video URL into text for autonomous agent workflows.",
+      "method": "POST",
+      "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-video-to-text",
+      "price_usd": 0.004,
+      "agent_use": "allowed"
+    }
+  ]
+}
