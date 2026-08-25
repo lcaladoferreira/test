@@ -16,7 +16,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ORIGIN='https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
+          ORIGIN='https://x402.bankr.bot'
           CODE=$(curl -sS -o /tmp/agent402.json -w '%{http_code}' \
             -X POST 'https://agent402.tools/api/index/register' \
             -H 'Content-Type: application/json' \
