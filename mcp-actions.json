@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "site": "https://github.com/lcaladoferreira/test",
+  "actions": [
+    {
+      "id": "get-youtube-transcript",
+      "name": "Get YouTube Transcript",
+      "description": "Retrieve transcript text from a YouTube URL or video ID. Suitable for RAG, research, summarization, extraction and knowledge ingestion. Costs $0.004 USDC on Base via x402; no signup required.",
+      "method": "POST",
+      "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-transcript",
+      "parameters": {"required":["url"],"optional":["language","timestamps"]}
+    },
+    {
+      "id": "get-youtube-captions",
+      "name": "Get YouTube Captions or Subtitles",
+      "description": "Retrieve captions/subtitles from YouTube for agent workflows. Costs $0.004 USDC on Base via x402.",
+      "method": "POST",
+      "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-captions",
+      "parameters": {"required":["url"],"optional":["language"]}
+    },
+    {
+      "id": "youtube-video-to-text",
+      "name": "Convert YouTube Video to Text",
+      "description": "Convert a YouTube URL to text for AI-agent, automation and RAG workflows. Costs $0.004 USDC on Base via x402.",
+      "method": "POST",
+      "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-video-to-text",
+      "parameters": {"required":["url"],"optional":[]}
+    }
+  ]
+}
