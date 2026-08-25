@@ -3,8 +3,11 @@ name: Register x402 services on 402 Index
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     paths:
       - '.github/workflows/register-402index.yml'
+      - 'bankr.x402.json'
+      - 'x402/**'
 
 jobs:
   register:
@@ -27,6 +30,9 @@ jobs:
 
           BASE='https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
           submit 'YouTube Transcript API' "$BASE/youtube-transcript"
+          submit 'Cheap YouTube Transcript API' "$BASE/youtube-transcript-basic"
+          submit 'YouTube Transcribe API' "$BASE/youtube-transcribe"
+          submit 'YouTube Transcript API Alias' "$BASE/youtube-transcript-api"
           submit 'YouTube Captions API' "$BASE/youtube-captions"
           submit 'YouTube Subtitles API' "$BASE/youtube-subtitles"
           submit 'YouTube Video to Text API' "$BASE/youtube-video-to-text"
