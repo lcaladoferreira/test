@@ -14,7 +14,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          BASE='https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
           BODY=$(cat <<'JSON'
           {
             "url": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb",
@@ -24,13 +23,13 @@ jobs:
             "website_url": "https://github.com/lcaladoferreira/test",
             "category": "AI",
             "endpoints": [
-              "POST /youtube-transcript",
-              "POST /youtube-captions",
-              "POST /youtube-video-to-text",
-              "POST /youtube-metadata",
-              "POST /youtube-transcript-batch"
+              "/youtube-transcript",
+              "/youtube-captions",
+              "/youtube-video-to-text",
+              "/youtube-metadata",
+              "/youtube-transcript-batch"
             ],
-            "notes": "Hosted on Bankr x402 Cloud. Transcript $0.004, metadata $0.002, batch $0.010. JSON/text/SRT, language selection, manual/generated caption preference and optional translation are supported where applicable."
+            "notes": "Hosted on Bankr x402 Cloud. All listed endpoints are POST. Transcript $0.004, metadata $0.002, batch $0.010. JSON/text/SRT, language selection, manual/generated caption preference and optional translation are supported where applicable."
           }
           JSON
           )
@@ -41,7 +40,6 @@ jobs:
           echo "HTTP_STATUS=$CODE"
           cat /tmp/response.json
           echo
-          # 201 = queued for review. 402 = fee required; do not pay automatically.
           if [ "$CODE" = "201" ]; then
             echo 'SUBMISSION_ACCEPTED=YES'
           elif [ "$CODE" = "402" ]; then
