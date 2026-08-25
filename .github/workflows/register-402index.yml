@@ -6,36 +6,33 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/register-402index.yml'
-      - 'bankr.x402.json'
-      - 'x402/**'
 
 jobs:
   register:
     runs-on: ubuntu-latest
     steps:
-      - name: Submit services
+      - name: Submit verified live services
         shell: bash
         run: |
           set -euo pipefail
           submit() {
             local name="$1"
             local url="$2"
-            echo "Submitting: $name"
-            curl -sS -X POST 'https://402index.io/api/v1/register' \
+            echo "Submitting: $name -> $url"
+            code=$(curl -sS -o /tmp/response.json -w '%{http_code}' \
+              -X POST 'https://402index.io/api/v1/register' \
               -H 'Content-Type: application/json' \
-              --data "{\"url\":\"$url\",\"name\":\"$name\",\"protocol\":\"x402\",\"http_method\":\"POST\",\"probe_body\":\"{\\\"url\\\":\\\"https://www.youtube.com/watch?v=dQw4w9WgXcQ\\\"}\"}" \
-              | tee /tmp/last-response.json
+              --data "{\"url\":\"$url\",\"name\":\"$name\",\"protocol\":\"x402\",\"http_method\":\"POST\",\"probe_body\":\"{\\\"url\\\":\\\"https://www.youtube.com/watch?v=dQw4w9WgXcQ\\\"}\"}")
+            echo "HTTP_STATUS=$code"
+            cat /tmp/response.json || true
             echo
+            case "$code" in
+              200|201|202) ;;
+              *) echo "Registration failed for $name"; return 1 ;;
+            esac
           }
 
           BASE='https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
-          submit 'YouTube Transcript API' "$BASE/youtube-transcript"
-          submit 'Cheap YouTube Transcript API' "$BASE/youtube-transcript-basic"
-          submit 'YouTube Transcribe API' "$BASE/youtube-transcribe"
-          submit 'YouTube Transcript API Alias' "$BASE/youtube-transcript-api"
-          submit 'YouTube Captions API' "$BASE/youtube-captions"
-          submit 'YouTube Subtitles API' "$BASE/youtube-subtitles"
-          submit 'YouTube Video to Text API' "$BASE/youtube-video-to-text"
-          submit 'Video Transcript API' "$BASE/video-transcript"
-          submit 'YouTube Metadata API' "$BASE/youtube-metadata"
-          submit 'YouTube Transcript Batch API' "$BASE/youtube-transcript-batch"
+          submit 'YouTube Transcript API for AI Agents' "$BASE/youtube-transcript"
+          submit 'YouTube Captions API for AI Agents' "$BASE/youtube-captions"
+          submit 'YouTube Video to Text API for AI Agents' "$BASE/youtube-video-to-text"
