@@ -1,0 +1,39 @@
+name: x402 Market Watch
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check 402 Index listing status
+        shell: bash
+        run: |
+          set -euo pipefail
+          for id in \
+            2fd8e5bf-9ec1-4570-95a4-51d2d7e3fae1 \
+            10f74450-d844-4198-bd56-b2189316e673 \
+            2c1afa9e-295b-44bf-bb26-65ab95f7d1d5; do
+            echo "===== 402INDEX $id ====="
+            curl -sS "https://402index.io/api/v1/services/$id" || true
+            echo
+          done
+
+      - name: Check Bankr discovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          for q in \
+            'youtube transcript' \
+            'youtube captions' \
+            'youtube transcription' \
+            'youtube subtitles' \
+            'youtube video to text' \
+            'youtube metadata' \
+            'youtube transcript batch'; do
+            echo "===== BANKR QUERY: $q ====="
+            npx --yes @bankr/cli x402 search "$q" --raw || true
+          done
