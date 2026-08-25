@@ -1,0 +1,37 @@
+name: Register on Agent402 Marketplace
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/register-agent402.yml'
+      - 'bankr.x402.json'
+      - 'x402/**'
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Register Bankr x402 origin with Agent402
+        shell: bash
+        run: |
+          set -euo pipefail
+          ORIGIN='https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
+          CODE=$(curl -sS -o /tmp/agent402.json -w '%{http_code}' \
+            -X POST 'https://agent402.tools/api/index/register' \
+            -H 'Content-Type: application/json' \
+            --data "{\"origin\":\"$ORIGIN\"}")
+          echo "HTTP_STATUS=$CODE"
+          cat /tmp/agent402.json
+          echo
+          python3 - <<'PY'
+          import json
+          with open('/tmp/agent402.json') as f:
+              j=json.load(f)
+          print('LISTED=', j.get('listed'))
+          if not j.get('listed'):
+              raise SystemExit('Agent402 did not list the origin: '+str(j.get('error')))
+          seller=j.get('seller') or {}
+          print('SELLER=', seller.get('displayName') or seller.get('name'))
+          print('TOOLS=', seller.get('toolCount'))
+          PY
