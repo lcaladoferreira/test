@@ -1,0 +1,22 @@
+# YouTube AI Data APIs
+
+Low-cost x402 APIs for AI agents. Pay per call with USDC on Base. No signup.
+
+Base URL:
+https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb
+
+Services:
+- POST /youtube-transcript-basic — $0.0011 — budget plain-text YouTube transcript.
+- POST /youtube-transcript — $0.004 — premium transcript with JSON/text/SRT, timestamps, language selection, manual/generated caption preference and optional translation.
+- POST /youtube-captions — $0.004 — captions extraction.
+- POST /youtube-subtitles — $0.004 — subtitles extraction.
+- POST /youtube-video-to-text — $0.004 — YouTube video-to-text.
+- POST /video-transcript — $0.004 — video transcript discovery alias optimized for YouTube.
+- POST /youtube-metadata — $0.002 — title, channel, canonical URL and thumbnail metadata.
+- POST /youtube-transcript-batch — $0.010 — transcripts for 2–3 videos.
+
+Example input:
+{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ","format":"text"}
+
+Machine-readable catalog: /api-catalog.json
+Keywords: youtube transcript api, youtube captions api, youtube subtitles api, video to text api, x402, AI agent API, USDC, Base, RAG, LLM.
