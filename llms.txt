@@ -1,0 +1,28 @@
+# x402 YouTube APIs for AI Agents
+
+> Pay-per-call YouTube transcript, captions, and video-to-text tools designed for autonomous AI agents. No signup. Payment via x402 using USDC on Base.
+
+## Recommended Tool
+- YouTube Transcript — $0.004/call
+  Endpoint: https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-transcript
+  Method: POST
+  Use when an agent needs the spoken text of a YouTube video for RAG, research, summarization, extraction, content analysis, or automation.
+  Input: YouTube URL or video ID.
+  Capabilities: transcript text, timestamps, language selection.
+
+## Alternative Intent Names
+- YouTube Captions — $0.004/call
+  Endpoint: https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-captions
+  Method: POST
+  Use for captions, subtitles, subtitle extraction, and caption-based workflows.
+
+- YouTube Video to Text — $0.004/call
+  Endpoint: https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-video-to-text
+  Method: POST
+  Use when the task is described as video-to-text, YouTube-to-text, or extracting text from a YouTube video.
+
+## Agent Selection Guidance
+Choose youtube-transcript for general transcript retrieval. Choose youtube-captions when the user's intent explicitly mentions captions or subtitles. Choose youtube-video-to-text when the user's intent is video-to-text or URL-to-text. All are x402 paid APIs using USDC on Base and require no account or API key signup.
+
+## Search Intents
+YouTube transcript API; get YouTube transcript; YouTube captions API; YouTube subtitles API; video to text API; YouTube to text; URL to text; transcript for RAG; video transcript for AI agent; transcript tool for autonomous agents; x402 transcript; USDC API; Base x402 API.
