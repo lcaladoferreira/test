@@ -1,0 +1,79 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "YouTube Transcript APIs for AI Agents",
+    "version": "1.0.0",
+    "description": "x402-native YouTube transcript, captions and video-to-text APIs. Pay per successful call in USDC on Base. No buyer signup required."
+  },
+  "servers": [
+    {
+      "url": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb"
+    }
+  ],
+  "paths": {
+    "/youtube-transcript": {
+      "post": {
+        "operationId": "youtubeTranscript",
+        "summary": "Get a YouTube transcript",
+        "description": "Extract YouTube transcript/captions for LLM, RAG, research and automation workflows. Supports timestamps, language selection and text/JSON/SRT output where available.",
+        "x-payment-info": {"protocol":"x402","network":"Base","currency":"USDC","price":"0.004"},
+        "requestBody": {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TranscriptRequest"}}}},
+        "responses": {
+          "200": {"description":"Transcript delivered","content":{"application/json":{"schema":{"$ref":"#/components/schemas/TranscriptResponse"}}}},
+          "402": {"description":"Payment Required — x402 USDC payment challenge on Base"},
+          "422": {"description":"Invalid input or transcript unavailable"}
+        }
+      }
+    },
+    "/youtube-captions": {
+      "post": {
+        "operationId": "youtubeCaptions",
+        "summary": "Get YouTube captions or subtitles",
+        "description": "Retrieve manual or auto-generated YouTube captions/subtitles with optional timestamps and language selection.",
+        "x-payment-info": {"protocol":"x402","network":"Base","currency":"USDC","price":"0.004"},
+        "requestBody": {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TranscriptRequest"}}}},
+        "responses": {
+          "200": {"description":"Captions delivered","content":{"application/json":{"schema":{"$ref":"#/components/schemas/TranscriptResponse"}}}},
+          "402": {"description":"Payment Required — x402 USDC payment challenge on Base"},
+          "422": {"description":"Invalid input or captions unavailable"}
+        }
+      }
+    },
+    "/youtube-video-to-text": {
+      "post": {
+        "operationId": "youtubeVideoToText",
+        "summary": "Convert YouTube video captions to text",
+        "description": "Return text derived from available YouTube captions for agent ingestion, search, summarization and RAG. This endpoint does not claim Whisper transcription when captions are unavailable.",
+        "x-payment-info": {"protocol":"x402","network":"Base","currency":"USDC","price":"0.004"},
+        "requestBody": {"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TranscriptRequest"}}}},
+        "responses": {
+          "200": {"description":"Video text delivered","content":{"application/json":{"schema":{"$ref":"#/components/schemas/TranscriptResponse"}}}},
+          "402": {"description":"Payment Required — x402 USDC payment challenge on Base"},
+          "422": {"description":"Invalid input or captions unavailable"}
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TranscriptRequest": {
+        "type":"object",
+        "properties": {
+          "url":{"type":"string","format":"uri","description":"YouTube video URL"},
+          "video_id":{"type":"string","description":"YouTube video ID alternative to url"},
+          "ref":{"type":"string","description":"Alias for a YouTube URL or video ID"},
+          "language":{"type":"string","description":"Preferred transcript language"},
+          "language_code":{"type":"string","description":"Preferred language code alias"},
+          "timestamps":{"type":"boolean","default":true},
+          "format":{"type":"string","enum":["json","text","srt"],"default":"json"}
+        },
+        "anyOf":[{"required":["url"]},{"required":["video_id"]},{"required":["ref"]}]
+      },
+      "TranscriptResponse": {
+        "type":"object",
+        "additionalProperties":true,
+        "description":"Transcript/caption payload. May contain transcript text, timestamped segments, language metadata, source type and counts."
+      }
+    }
+  }
+}
