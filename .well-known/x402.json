@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "name": "YouTube Transcript APIs for AI Agents",
+  "description": "Pay-per-call YouTube transcript, captions and video-to-text APIs for autonomous agents, LLM/RAG pipelines, research and automation.",
+  "protocol": "x402",
+  "network": "Base",
+  "currency": "USDC",
+  "seller": "0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb",
+  "baseUrl": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb",
+  "openapi": "https://raw.githubusercontent.com/lcaladoferreira/test/main/openapi.json",
+  "services": [
+    {
+      "name": "youtube-transcript",
+      "method": "POST",
+      "path": "/youtube-transcript",
+      "price": "0.004",
+      "currency": "USDC",
+      "network": "Base",
+      "keywords": ["youtube transcript","transcript api","captions","subtitles","rag","llm","video text"]
+    },
+    {
+      "name": "youtube-captions",
+      "method": "POST",
+      "path": "/youtube-captions",
+      "price": "0.004",
+      "currency": "USDC",
+      "network": "Base",
+      "keywords": ["youtube captions","youtube subtitles","captions api","timestamps","rag"]
+    },
+    {
+      "name": "youtube-video-to-text",
+      "method": "POST",
+      "path": "/youtube-video-to-text",
+      "price": "0.004",
+      "currency": "USDC",
+      "network": "Base",
+      "keywords": ["youtube video to text","extract youtube text","video text api","captions to text","rag ingestion"]
+    }
+  ]
+}
