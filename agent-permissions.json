@@ -2,31 +2,42 @@
   "version": "1.0",
   "agent_access": "allowed",
   "authentication": "x402-payment",
-  "payment": {"network":"Base","asset":"USDC"},
+  "payment": {
+    "network": "Base",
+    "asset": "USDC",
+    "protocol": "x402",
+    "settlement": "on-chain, after successful response"
+  },
   "capabilities": [
     {
       "id": "youtube-transcript",
-      "description": "Get transcript text from a YouTube URL or video ID for RAG, research, summarization and automation.",
+      "name": "YouTube Transcript",
+      "description": "Extract transcript, captions and subtitles from YouTube videos with timestamps, language selection, manual/auto caption preference, optional translation and JSON/text/SRT output. For RAG, LLM context, research and automation.",
       "method": "POST",
       "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-transcript",
       "price_usd": 0.004,
-      "agent_use": "allowed"
+      "agent_use": "allowed",
+      "intents": ["youtube transcript", "get youtube transcript", "youtube transcript api", "transcript", "captions", "subtitles", "video to text", "transcription", "rag", "llm"]
     },
     {
       "id": "youtube-captions",
-      "description": "Extract YouTube captions or subtitles for agent workflows.",
+      "name": "YouTube Captions",
+      "description": "Extract captions, subtitles or transcript from YouTube videos with timestamps, language selection and JSON/text/SRT output.",
       "method": "POST",
       "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-captions",
       "price_usd": 0.004,
-      "agent_use": "allowed"
+      "agent_use": "allowed",
+      "intents": ["youtube captions", "youtube subtitles", "captions api", "subtitles api", "youtube captions api"]
     },
     {
       "id": "youtube-video-to-text",
-      "description": "Convert a YouTube video URL into text for autonomous agent workflows.",
+      "name": "YouTube Video to Text",
+      "description": "Convert a YouTube video URL into clean transcript text for RAG, research, summarization and automation workflows.",
       "method": "POST",
       "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-video-to-text",
       "price_usd": 0.004,
-      "agent_use": "allowed"
+      "agent_use": "allowed",
+      "intents": ["youtube video to text", "video to text", "youtube-to-text", "extract youtube text", "convert video to text"]
     }
   ]
 }
