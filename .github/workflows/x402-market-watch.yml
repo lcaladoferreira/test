@@ -8,6 +8,8 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      WALLET: '0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
     steps:
       - name: Check 402 Index listing status
         shell: bash
@@ -30,18 +32,31 @@ jobs:
           curl -sS 'https://402index.io/api/v1/opportunities?protocol=x402' || true
           echo
 
-      - name: Check Bankr discovery
+      - name: Check Bankr marketplace discovery
         shell: bash
         run: |
           set -euo pipefail
+          echo "========================================="
+          echo "BANKR MARKETPLACE DISCOVERY CHECK"
+          echo "Wallet: $WALLET"
+          echo "========================================="
           for q in \
             'youtube transcript' \
+            'youtube transcript api' \
             'youtube captions' \
-            'youtube transcription' \
             'youtube subtitles' \
+            'youtube transcription' \
+            'video transcript' \
             'youtube video to text' \
-            'youtube metadata' \
-            'youtube transcript batch'; do
-            echo "===== BANKR QUERY: $q ====="
-            npx --yes @bankr/cli x402 search "$q" --raw || true
+            'transcribe youtube video' \
+            'transcript for LLM' \
+            'transcript for RAG'; do
+            echo "--- QUERY: \"$q\" ---"
+            npx --yes @bankr/cli x402 search "$q" --raw > /tmp/search.json 2>&1 || true
+            if grep -qi "$WALLET" /tmp/search.json; then
+              echo "FOUND_OUR_SERVICE=YES"
+            else
+              echo "FOUND_OUR_SERVICE=NO"
+            fi
+            echo ""
           done

@@ -5,26 +5,73 @@
     {
       "id": "get-youtube-transcript",
       "name": "Get YouTube Transcript",
-      "description": "Retrieve transcript text from a YouTube URL or video ID. Suitable for RAG, research, summarization, extraction and knowledge ingestion. Costs $0.004 USDC on Base via x402; no signup required.",
+      "description": "Extract transcript, captions and subtitles from any YouTube video URL with timestamps, language selection, manual/auto caption preference, optional translation and JSON/text/SRT output. For RAG ingestion, LLM context, research, summarization and knowledge-base indexing. Costs $0.004 USDC on Base via x402. No signup required.",
       "method": "POST",
       "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-transcript",
-      "parameters": {"required":["url"],"optional":["language","timestamps"]}
+      "parameters": {
+        "required": ["url"],
+        "optional": ["videoId", "language", "sourcePreference", "translateTo", "includeSegments", "format"]
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "url": {"type": "string", "description": "YouTube video URL"},
+            "videoId": {"type": "string", "description": "11-char YouTube video ID"},
+            "language": {"type": "string", "description": "Language code"},
+            "sourcePreference": {"type": "string", "enum": ["any", "manual", "generated"]},
+            "translateTo": {"type": "string", "description": "Translation target language code"},
+            "includeSegments": {"type": "boolean"},
+            "format": {"type": "string", "enum": ["json", "text", "srt"]}
+          }
+        }
+      }
     },
     {
       "id": "get-youtube-captions",
       "name": "Get YouTube Captions or Subtitles",
-      "description": "Retrieve captions/subtitles from YouTube for agent workflows. Costs $0.004 USDC on Base via x402.",
+      "description": "Extract captions, subtitles or transcript from YouTube videos with timestamps, language selection and JSON/text/SRT output. For workflows where the agent specifically needs captions or subtitles. Costs $0.004 USDC on Base via x402.",
       "method": "POST",
       "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-captions",
-      "parameters": {"required":["url"],"optional":["language"]}
+      "parameters": {
+        "required": ["url"],
+        "optional": ["videoId", "language", "includeSegments", "format"]
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "url": {"type": "string", "description": "YouTube video URL"},
+            "videoId": {"type": "string", "description": "11-char YouTube video ID"},
+            "language": {"type": "string", "description": "Language code"},
+            "includeSegments": {"type": "boolean"},
+            "format": {"type": "string", "enum": ["json", "text", "srt"]}
+          }
+        }
+      }
     },
     {
       "id": "youtube-video-to-text",
       "name": "Convert YouTube Video to Text",
-      "description": "Convert a YouTube URL to text for AI-agent, automation and RAG workflows. Costs $0.004 USDC on Base via x402.",
+      "description": "Convert any YouTube video URL into clean transcript text with JSON, plain text or SRT-ready output. For video-to-text, content extraction, RAG pipeline ingestion and automated summarization. Costs $0.004 USDC on Base via x402.",
       "method": "POST",
       "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-video-to-text",
-      "parameters": {"required":["url"],"optional":[]}
+      "parameters": {
+        "required": ["url"],
+        "optional": ["videoId", "language", "includeSegments", "format"]
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "url": {"type": "string", "description": "YouTube video URL"},
+            "videoId": {"type": "string", "description": "11-char YouTube video ID"},
+            "language": {"type": "string", "description": "Language code"},
+            "includeSegments": {"type": "boolean"},
+            "format": {"type": "string", "enum": ["json", "text", "srt"]}
+          }
+        }
+      }
     }
   ]
 }

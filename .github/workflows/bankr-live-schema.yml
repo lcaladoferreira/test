@@ -9,13 +9,15 @@ on:
 jobs:
   probe:
     runs-on: ubuntu-latest
+    env:
+      WALLET: '0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
     steps:
       - name: Inspect live Bankr schemas
         shell: bash
         run: |
           set -euo pipefail
-          BASE='https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
-          for name in youtube-transcript youtube-captions youtube-subtitles youtube-video-to-text video-transcript youtube-metadata youtube-transcript-batch; do
+          BASE="https://x402.bankr.bot/$WALLET"
+          for name in youtube-transcript youtube-captions youtube-video-to-text; do
             echo "===== SCHEMA: $name ====="
             npx --yes @bankr/cli x402 schema "$BASE/$name" --raw || true
           done
@@ -24,19 +26,29 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          BASE='https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
-          for name in youtube-transcript youtube-captions youtube-subtitles youtube-video-to-text video-transcript youtube-metadata youtube-transcript-batch; do
+          BASE="https://x402.bankr.bot/$WALLET"
+          for name in youtube-transcript youtube-captions youtube-video-to-text; do
             code=$(curl -sS -o /tmp/body.json -w '%{http_code}' -X POST "$BASE/$name" -H 'content-type: application/json' --data '{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}')
             echo "HTTP $name=$code"
-            head -c 1000 /tmp/body.json || true
-            echo
+            if [ "$code" = '402' ]; then
+              echo "  STATUS: ACTIVE (returns 402 payment challenge)"
+            else
+              echo "  STATUS: UNEXPECTED ($code)"
+              head -c 500 /tmp/body.json || true
+            fi
+            echo ""
           done
 
-      - name: Probe Bankr search
+      - name: Probe Bankr marketplace search
         shell: bash
         run: |
           set -euo pipefail
+          echo "========================================="
+          echo "MARKETPLACE SEARCH PROBE"
+          echo "Wallet: $WALLET"
+          echo "========================================="
           for q in 'youtube transcript' 'youtube captions' 'youtube subtitles' 'video transcript' 'youtube video to text'; do
-            echo "===== SEARCH: $q ====="
-            npx --yes @bankr/cli x402 search "$q" --raw || true
+            echo "===== SEARCH: \"$q\" ====="
+            npx --yes @bankr/cli x402 search "$q" --raw 2>&1 || true
+            echo ""
           done

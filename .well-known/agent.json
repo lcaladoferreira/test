@@ -1,0 +1,39 @@
+{
+  "name": "YouTube Transcript APIs for AI Agents",
+  "description": "Pay-per-call YouTube transcript, captions and video-to-text APIs for autonomous AI agents, LLM/RAG pipelines, research and automation. No signup. USDC on Base via x402.",
+  "url": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb",
+  "version": "1.0.0",
+  "protocol": "x402",
+  "capabilities": [
+    {
+      "name": "youtube-transcript",
+      "description": "Extract YouTube transcript, captions and subtitles with timestamps, language selection and JSON/text/SRT output",
+      "method": "POST",
+      "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-transcript",
+      "price": "0.004",
+      "currency": "USDC"
+    },
+    {
+      "name": "youtube-captions",
+      "description": "Extract YouTube captions and subtitles with timestamps and language selection",
+      "method": "POST",
+      "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-captions",
+      "price": "0.004",
+      "currency": "USDC"
+    },
+    {
+      "name": "youtube-video-to-text",
+      "description": "Convert YouTube video to clean transcript text",
+      "method": "POST",
+      "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/youtube-video-to-text",
+      "price": "0.004",
+      "currency": "USDC"
+    }
+  ],
+  "payment": {
+    "protocol": "x402",
+    "network": "Base",
+    "currency": "USDC",
+    "wallet": "0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb"
+  }
+}

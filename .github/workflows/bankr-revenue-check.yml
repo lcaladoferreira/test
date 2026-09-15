@@ -1,4 +1,4 @@
-name: Bankr Revenue Check
+name: Bankr Revenue & Discovery Check
 
 on:
   workflow_dispatch:
@@ -8,21 +8,77 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      WALLET: '0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
     steps:
-      - name: Check Bankr discovery
+      - name: Check Bankr marketplace discovery
         shell: bash
         run: |
           set -euo pipefail
-          WALLET_SERVICE='0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb'
-          for q in 'youtube transcript' 'youtube captions' 'youtube transcription' 'youtube subtitles' 'video transcript' 'youtube video to text' 'youtube transcript api' 'cheap youtube transcript' 'youtube transcribe'; do
-            echo "===== $q ====="
-            npx --yes @bankr/cli x402 search "$q" --raw > /tmp/search.json || true
-            if grep -qi "$WALLET_SERVICE" /tmp/search.json; then
-              echo "DISCOVERY_FOUND=$q"
+          FOUND_COUNT=0
+          TOTAL=0
+          echo "========================================="
+          echo "MARKETPLACE DISCOVERY CHECK"
+          echo "Wallet: $WALLET"
+          echo "========================================="
+          for q in \
+            'youtube transcript' \
+            'youtube transcript api' \
+            'youtube captions' \
+            'youtube subtitles' \
+            'youtube transcription' \
+            'video transcript' \
+            'youtube video to text' \
+            'transcribe youtube video' \
+            'cheap youtube transcript' \
+            'youtube transcribe' \
+            'transcript for LLM' \
+            'transcript for RAG'; do
+            echo "--- QUERY: \"$q\" ---"
+            TOTAL=$((TOTAL + 1))
+            npx --yes @bankr/cli x402 search "$q" --raw > /tmp/search.json 2>&1 || true
+            if grep -qi "$WALLET" /tmp/search.json; then
+              echo "FOUND=YES"
+              FOUND_COUNT=$((FOUND_COUNT + 1))
             else
-              echo "DISCOVERY_NOT_FOUND=$q"
+              echo "FOUND=NO"
+            fi
+            echo ""
+          done
+          echo "========================================="
+          echo "SUMMARY: $FOUND_COUNT / $TOTAL queries found our services"
+          if [ "$FOUND_COUNT" -eq 0 ]; then
+            echo "MARKETPLACE_DISCOVERABLE=NO"
+            echo "Our endpoints are ACTIVE but not appearing in marketplace search."
+            echo "Bankr approval may be required for marketplace indexing."
+          elif [ "$FOUND_COUNT" -lt "$TOTAL" ]; then
+            echo "MARKETPLACE_DISCOVERABLE=PARTIAL"
+            echo "Some queries find our services, others don't."
+          else
+            echo "MARKETPLACE_DISCOVERABLE=YES"
+          fi
+          echo "========================================="
+
+      - name: Verify active endpoints return 402
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://x402.bankr.bot/$WALLET"
+          DEPLOYED=0
+          for name in youtube-transcript youtube-captions youtube-video-to-text; do
+            code=$(curl -sS -o /tmp/http_${name}.json -w '%{http_code}' -X POST "$BASE/$name" -H 'content-type: application/json' --data '{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}')
+            echo "$name HTTP=$code"
+            if [ "$code" = '402' ]; then
+              DEPLOYED=$((DEPLOYED + 1))
             fi
           done
+          echo "DEPLOYED=$DEPLOYED/3"
+          if [ "$DEPLOYED" -eq 3 ]; then
+            echo "DEPLOYED=YES"
+            echo "ACTIVE=YES"
+          else
+            echo "DEPLOYED=PARTIAL"
+          fi
 
       - name: Revenue by Bankr endpoint
         env:
@@ -30,25 +86,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SERVICES=(
-            youtube-transcript
-            youtube-transcript-basic
-            youtube-transcribe
-            youtube-transcript-api
-            youtube-captions
-            youtube-subtitles
-            youtube-video-to-text
-            video-transcript
-            youtube-metadata
-            youtube-transcript-batch
-          )
-          for service in "${SERVICES[@]}"; do
+          if [ -z "${BANKR_API_KEY:-}" ]; then
+            echo "BANKR_API_KEY not set - skipping revenue check"
+            exit 0
+          fi
+          for service in youtube-transcript youtube-captions youtube-video-to-text; do
             echo "===== REVENUE: $service ====="
             npx --yes @bankr/cli x402 revenue "$service" || true
           done
-
-      - name: Explain settlement-wallet exclusion
-        shell: bash
-        run: |
-          echo 'Revenue is intentionally measured with `bankr x402 revenue <service>`.'
-          echo 'The shared settlement wallet is not used as a product-revenue proxy because unrelated x402 services can settle to the same address.'
