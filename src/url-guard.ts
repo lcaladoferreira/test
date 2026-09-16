@@ -5,6 +5,8 @@ import { HttpError } from "./errors.js";
 const BLOCKED_NAMES = new Set(["localhost", "localhost.localdomain", "metadata", "metadata.google.internal", "metadata.goog", "instance-data", "169.254.169.254"]);
 const BLOCKED_SUFFIXES = [".localhost", ".local", ".internal", ".localdomain", ".onion"];
 
+type LookupAnswer = { address: string; family: number };
+
 export function isBlockedIp(address: string): boolean {
   if (address.includes(":")) {
     const h = address.toLowerCase().replace(/^\[|\]$/g, "");
@@ -34,9 +36,13 @@ export async function validatePublicUrl(raw: unknown): Promise<URL> {
   const url = validateUrlShape(raw);
   const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
   if (!isIP(host)) {
-    let answers: Awaited<ReturnType<typeof lookup>>;
-    try { answers = await lookup(host, { all: true, verbatim: true }); } catch { throw new HttpError(422, "DNS_LOOKUP_FAILED", "Target hostname could not be resolved"); }
-    if (!answers.length || answers.some((a) => isBlockedIp(a.address))) throw new HttpError(400, "UNSAFE_URL", "Target resolves to a private, loopback, link-local or reserved address");
+    let answers: LookupAnswer[];
+    try {
+      answers = await lookup(host, { all: true, verbatim: true }) as LookupAnswer[];
+    } catch {
+      throw new HttpError(422, "DNS_LOOKUP_FAILED", "Target hostname could not be resolved");
+    }
+    if (!answers.length || answers.some((a: LookupAnswer) => isBlockedIp(a.address))) throw new HttpError(400, "UNSAFE_URL", "Target resolves to a private, loopback, link-local or reserved address");
   }
   return url;
 }
