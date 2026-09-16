@@ -1,0 +1,58 @@
+name: Agent Web Extract deployment inspect
+
+on:
+  push:
+    branches:
+      - agent-web-extract-accidental-backup-20260916
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Vercel deployment status
+        run: sleep 45
+
+      - name: Resolve public deployment URL from GitHub Deployments API
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/${REPO}"
+          auth=(-H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json")
+
+          deployments="$(curl -fsSL "${auth[@]}" "${api}/deployments?sha=${SHA}&per_page=20")"
+          echo "deployments_count=$(jq 'length' <<<"$deployments")"
+
+          url=""
+          for id in $(jq -r '.[].id' <<<"$deployments"); do
+            statuses="$(curl -fsSL "${auth[@]}" "${api}/deployments/${id}/statuses?per_page=20")"
+            candidate="$(jq -r '[.[] | select(.state == "success") | (.environment_url // .target_url // empty)] | map(select(length > 0)) | .[0] // empty' <<<"$statuses")"
+            if [[ "$candidate" == https://*.vercel.app* ]]; then
+              url="$candidate"
+              break
+            fi
+          done
+
+          if [[ -z "$url" ]]; then
+            echo "PUBLIC_DEPLOYMENT_URL_NOT_FOUND"
+            echo "$deployments" | jq -c '[.[] | {id,environment,ref,sha}]'
+            exit 1
+          fi
+
+          echo "PUBLIC_DEPLOYMENT_URL=$url"
+          printf '%s\n' "$url" > /tmp/agent-web-extract-public-url.txt
+
+          echo "--- unpaid probe ---"
+          curl -sS -D /tmp/headers.txt -o /tmp/body.txt -X POST "${url%/}/api/web-extract" \
+            -H 'content-type: application/json' \
+            --data '{"url":"https://example.com","format":"json"}' || true
+          head -50 /tmp/headers.txt
+          head -c 1200 /tmp/body.txt || true
+          echo
