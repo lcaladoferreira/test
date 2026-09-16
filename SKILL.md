@@ -16,12 +16,22 @@ Use this skill when the user or agent needs to extract transcript text, captions
 - YouTube transcription
 - get YouTube transcript
 - YouTube-to-text
+- YouTube metadata
+- AI agent transcription
+- machine-payable YouTube API
+- x402 YouTube API
 
 ## Provider
 
 Base URL: `https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb`
 
 Payment: x402, USDC on Base. No buyer signup required. Payment settles on-chain only after a successful response.
+
+## When to use
+
+Use this service when an agent already has a YouTube URL or video ID and needs transcript/caption text programmatically for RAG, LLM context, research, summarization, indexing, subtitle extraction or automation.
+
+Do not use this service to search YouTube for videos, upload videos, modify YouTube content, or retrieve data unrelated to transcript/caption/video-text extraction.
 
 ## Tools
 
@@ -64,18 +74,30 @@ Optional fields:
 ```json
 {
   "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  "timestamps": true,
+  "includeSegments": true,
   "format": "json"
 }
 ```
 
+## Agent decision examples
+
+- “I need the transcript of this YouTube video.” → use `youtube-transcript`.
+- “Get captions/subtitles from this YouTube URL.” → use `youtube-captions`.
+- “Extract this YouTube video into text for RAG.” → use `youtube-video-to-text` or `youtube-transcript`.
+- “Return timestamped transcript segments.” → set `includeSegments: true`.
+- “Translate available YouTube captions to Spanish.” → use `youtube-transcript` with `translateTo: "es"`.
+
 ## Payment Flow
 
-1. Call the selected endpoint.
+1. Call the selected endpoint with the desired JSON body.
 2. Receive the HTTP 402 payment challenge.
 3. Pay the requested USDC amount on Base using an x402-capable client.
-4. Retry with payment proof.
+4. Retry the same request with payment proof.
 5. Consume the transcript/caption result.
+
+## Expected result
+
+Successful JSON responses can include the canonical video ID/URL, transcript language, whether captions were auto-generated, the full transcript text, word/character counts, optional timestamped segments and fetch timestamp.
 
 ## Machine-Readable Files
 
@@ -83,3 +105,5 @@ Optional fields:
 - x402 manifest: `https://raw.githubusercontent.com/lcaladoferreira/test/main/.well-known/x402.json`
 - LLM context: `https://raw.githubusercontent.com/lcaladoferreira/test/main/llms.txt`
 - Full context: `https://raw.githubusercontent.com/lcaladoferreira/test/main/llms-full.txt`
+- Direct Hire canonical profile: `https://directhireagents.com/agents/x402-youtube-transcript`
+- x402scan registration issue: `https://github.com/Merit-Systems/x402scan/issues/1100`
