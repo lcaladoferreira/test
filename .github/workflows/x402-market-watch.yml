@@ -109,3 +109,41 @@ jobs:
             code=$(curl -sS -o "/tmp/${name}.json" -w '%{http_code}' -X POST "$BASE_URL/$name" -H 'content-type: application/json' --data "$SINGLE")
             echo "$name HTTP=$code"
           done
+
+      - name: Validate all seven payment requirements without paying
+        if: always()
+        shell: python
+        run: |
+          import base64, json, os, urllib.request, urllib.error
+          wallet = os.environ["WALLET"]
+          base = os.environ["BASE_URL"]
+          prices = {"youtube-transcript-basic":1100,"youtube-transcript":4000,"youtube-captions":4000,"youtube-subtitles":4000,"youtube-video-to-text":4000,"youtube-metadata":2000,"youtube-transcript-batch":10000}
+          for name, amount in prices.items():
+              body = {"videos":["dQw4w9WgXcQ","9bZkp7q19f0"]} if name.endswith("-batch") else {"videoId":"dQw4w9WgXcQ"}
+              row = {"route": name, "expectedAtomicUSDC": amount}
+              try:
+                  req = urllib.request.Request(base+"/"+name, data=json.dumps(body).encode(), headers={"Content-Type":"application/json"})
+                  try:
+                      response = urllib.request.urlopen(req, timeout=25)
+                  except urllib.error.HTTPError as error:
+                      response = error
+                  row["http"] = response.code
+                  raw = response.read(262144)
+                  header = response.headers.get("PAYMENT-REQUIRED")
+                  payment = json.loads(base64.b64decode(header)) if header else json.loads(raw)
+                  accepts = payment.get("accepts", [])
+                  row["requirements"] = [{k:a.get(k) for k in ("scheme","network","asset","amount","maxAmountRequired","payTo","maxTimeoutSeconds")} for a in accepts]
+                  row["paymentValid"] = response.code == 402 and any(
+                      a.get("scheme") == "exact"
+                      and a.get("network") in ("base","eip155:8453")
+                      and str(a.get("amount",a.get("maxAmountRequired"))) == str(amount)
+                      and str(a.get("asset","")).lower() == "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+                      and str(a.get("payTo","")).lower() == wallet.lower()
+                      and isinstance(a.get("maxTimeoutSeconds"), (int,float)) and a["maxTimeoutSeconds"] > 0
+                      for a in accepts)
+                  row["resourcePresent"] = bool(payment.get("resource",{}).get("url")) if isinstance(payment.get("resource"),dict) else False
+                  row["bazaarPresent"] = bool(payment.get("extensions",{}).get("bazaar"))
+              except Exception as error:
+                  row["errorType"] = type(error).__name__
+                  row["paymentValid"] = False
+              print(json.dumps(row), flush=True)
