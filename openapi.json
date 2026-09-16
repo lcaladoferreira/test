@@ -2,8 +2,22 @@
   "openapi": "3.1.0",
   "info": {
     "title": "YouTube Transcript APIs for AI Agents",
-    "version": "1.0.0",
-    "description": "Pay-per-call YouTube transcript, captions and video-to-text APIs for autonomous AI agents. No signup required. Payment via x402 using USDC on Base. Payments settle on-chain only after a successful response.",
+    "version": "1.1.0",
+    "description": "Machine-payable YouTube transcript, captions, subtitles, metadata and video-to-text APIs for AI agents. No signup or API key. Payment via x402 using USDC on Base.",
+    "x-guidance": {
+      "useWhen": "An agent already has one or more YouTube URLs/video IDs and needs transcript text, captions, subtitles, metadata or video-to-text for RAG, LLM context, research, summarization, indexing or automation.",
+      "doNotUseWhen": "The task is to search YouTube, upload/modify YouTube content, or retrieve unrelated web data.",
+      "routeSelection": {
+        "youtube-transcript-basic": "Cheapest route for simple transcript text.",
+        "youtube-transcript": "Recommended full route for timestamps, source preference, translation and JSON/text/SRT output.",
+        "youtube-captions": "Use when the intent explicitly asks for captions.",
+        "youtube-subtitles": "Use when the intent explicitly asks for subtitles or SRT.",
+        "youtube-video-to-text": "Use for video-to-text or RAG ingestion phrasing.",
+        "youtube-metadata": "Use when only title/channel/thumbnail metadata is needed.",
+        "youtube-transcript-batch": "Use for 2 or 3 videos in one request."
+      },
+      "payment": "Call the route, receive HTTP 402 payment requirements, pay USDC on Base with an x402 client, then retry with payment proof."
+    },
     "contact": {
       "name": "LCF Consulting",
       "url": "https://github.com/lcaladoferreira/test"
@@ -16,93 +30,71 @@
     }
   ],
   "paths": {
+    "/youtube-transcript-basic": {
+      "post": {
+        "operationId": "youtubeTranscriptBasic",
+        "summary": "Get a low-cost YouTube transcript",
+        "description": "Cheapest transcript route for simple text extraction, RAG ingestion and summarization.",
+        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.0011"},
+        "tags": ["youtube", "transcript", "rag", "ai-agent"],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BasicRequest"}}}},
+        "responses": {
+          "200": {"description": "Transcript delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BasicResponse"}}}},
+          "402": {"description": "Payment Required — x402 USDC on Base"},
+          "400": {"description": "Invalid input"},
+          "405": {"description": "POST required"},
+          "422": {"description": "Transcript unavailable"}
+        }
+      }
+    },
     "/youtube-transcript": {
       "post": {
         "operationId": "youtubeTranscript",
-        "summary": "Get YouTube transcript with timestamps, language selection and translation",
-        "description": "Extract clean transcript, captions or subtitles from any YouTube video URL. Supports manual/auto caption preference, language selection, optional translation, timestamped segments and JSON/text/SRT output. Built for RAG ingestion, LLM context, research, summarization and autonomous agent workflows.",
-        "x-payment-info": {
-          "protocol": "x402",
-          "network": "Base",
-          "currency": "USDC",
-          "price": "0.004"
-        },
-        "tags": ["youtube", "transcript", "captions", "ai-agent"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TranscriptRequest"
-              }
-            }
-          }
-        },
+        "summary": "Get full YouTube transcript with timestamps and translation",
+        "description": "Full-featured transcript extraction with language selection, manual/auto caption preference, optional translation, timestamped segments and JSON/text/SRT output.",
+        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.004"},
+        "tags": ["youtube", "transcript", "captions", "subtitles", "rag", "ai-agent"],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TranscriptRequest"}}}},
         "responses": {
-          "200": {
-            "description": "Transcript delivered successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TranscriptResponse"
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Payment Required — x402 USDC payment challenge on Base"
-          },
-          "405": {
-            "description": "Method not allowed — use POST"
-          },
-          "422": {
-            "description": "Transcript unavailable for the requested video"
-          }
+          "200": {"description": "Transcript delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TranscriptResponse"}}}},
+          "402": {"description": "Payment Required — x402 USDC on Base"},
+          "400": {"description": "Invalid input"},
+          "405": {"description": "POST required"},
+          "422": {"description": "Transcript unavailable"}
         }
       }
     },
     "/youtube-captions": {
       "post": {
         "operationId": "youtubeCaptions",
-        "summary": "Get YouTube captions or subtitles",
-        "description": "Extract clean captions, subtitles or transcript from any YouTube video URL with timestamps, language selection and JSON/text/SRT output. Optimized for workflows where the agent specifically needs captions or subtitles.",
-        "x-payment-info": {
-          "protocol": "x402",
-          "network": "Base",
-          "currency": "USDC",
-          "price": "0.004"
-        },
-        "tags": ["youtube", "captions", "subtitles", "ai-agent"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CaptionsRequest"
-              }
-            }
-          }
-        },
+        "summary": "Get YouTube captions",
+        "description": "Extract captions with timestamps, language selection and JSON/text/SRT output.",
+        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.004"},
+        "tags": ["youtube", "captions", "transcript", "ai-agent"],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CaptionsRequest"}}}},
         "responses": {
-          "200": {
-            "description": "Captions delivered successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TranscriptResponse"
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Payment Required — x402 USDC payment challenge on Base"
-          },
-          "405": {
-            "description": "Method not allowed — use POST"
-          },
-          "422": {
-            "description": "Captions unavailable for the requested video"
-          }
+          "200": {"description": "Captions delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TranscriptResponse"}}}},
+          "402": {"description": "Payment Required — x402 USDC on Base"},
+          "400": {"description": "Invalid input"},
+          "405": {"description": "POST required"},
+          "422": {"description": "Captions unavailable"}
+        }
+      }
+    },
+    "/youtube-subtitles": {
+      "post": {
+        "operationId": "youtubeSubtitles",
+        "summary": "Get YouTube subtitles or SRT",
+        "description": "Extract subtitles with timestamps, language selection and JSON/text/SRT output.",
+        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.004"},
+        "tags": ["youtube", "subtitles", "srt", "ai-agent"],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CaptionsRequest"}}}},
+        "responses": {
+          "200": {"description": "Subtitles delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TranscriptResponse"}}}},
+          "402": {"description": "Payment Required — x402 USDC on Base"},
+          "400": {"description": "Invalid input"},
+          "405": {"description": "POST required"},
+          "422": {"description": "Subtitles unavailable"}
         }
       }
     },
@@ -110,145 +102,156 @@
       "post": {
         "operationId": "youtubeVideoToText",
         "summary": "Convert YouTube video to text",
-        "description": "Convert any YouTube video URL into clean transcript text with JSON, plain text or SRT-ready output. Designed for video-to-text conversion, content extraction, RAG pipeline ingestion, research indexing and automated summarization.",
-        "x-payment-info": {
-          "protocol": "x402",
-          "network": "Base",
-          "currency": "USDC",
-          "price": "0.004"
-        },
-        "tags": ["youtube", "video-to-text", "transcript", "ai-agent"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CaptionsRequest"
-              }
-            }
-          }
-        },
+        "description": "Convert a YouTube URL into clean transcript text for RAG, research, indexing and summarization.",
+        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.004"},
+        "tags": ["youtube", "video-to-text", "transcript", "rag", "ai-agent"],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CaptionsRequest"}}}},
         "responses": {
-          "200": {
-            "description": "Video text delivered successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TranscriptResponse"
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Payment Required — x402 USDC payment challenge on Base"
-          },
-          "405": {
-            "description": "Method not allowed — use POST"
-          },
-          "422": {
-            "description": "Video text unavailable for the requested video"
-          }
+          "200": {"description": "Video text delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TranscriptResponse"}}}},
+          "402": {"description": "Payment Required — x402 USDC on Base"},
+          "400": {"description": "Invalid input"},
+          "405": {"description": "POST required"},
+          "422": {"description": "Video text unavailable"}
+        }
+      }
+    },
+    "/youtube-metadata": {
+      "post": {
+        "operationId": "youtubeMetadata",
+        "summary": "Get YouTube video metadata",
+        "description": "Return title, channel, canonical URL and thumbnail metadata without transcript extraction.",
+        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.002"},
+        "tags": ["youtube", "metadata", "video-metadata", "ai-agent"],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/MetadataRequest"}}}},
+        "responses": {
+          "200": {"description": "Metadata delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/MetadataResponse"}}}},
+          "402": {"description": "Payment Required — x402 USDC on Base"},
+          "400": {"description": "Invalid input"},
+          "405": {"description": "POST required"},
+          "422": {"description": "Metadata unavailable"}
+        }
+      }
+    },
+    "/youtube-transcript-batch": {
+      "post": {
+        "operationId": "youtubeTranscriptBatch",
+        "summary": "Get transcripts for 2 or 3 YouTube videos",
+        "description": "Batch transcript route for RAG, research and dataset workflows.",
+        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.010"},
+        "tags": ["youtube", "transcript", "batch", "rag", "ai-agent"],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BatchRequest"}}}},
+        "responses": {
+          "200": {"description": "Batch results delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BatchResponse"}}}},
+          "402": {"description": "Payment Required — x402 USDC on Base"},
+          "400": {"description": "videos must contain 2 or 3 valid entries"},
+          "405": {"description": "POST required"}
         }
       }
     }
   },
   "components": {
     "schemas": {
+      "BasicRequest": {
+        "type": "object",
+        "properties": {
+          "url": {"type": "string", "description": "YouTube video URL"},
+          "videoId": {"type": "string", "description": "11-character YouTube video ID"},
+          "language": {"type": "string", "description": "Preferred transcript language code"}
+        }
+      },
       "TranscriptRequest": {
         "type": "object",
-        "description": "Request body for youtube-transcript (premium endpoint with translation and caption source control)",
         "properties": {
-          "url": {
-            "type": "string",
-            "description": "YouTube video URL (youtube.com/watch, youtu.be, shorts, embed, live)"
-          },
-          "videoId": {
-            "type": "string",
-            "description": "11-character YouTube video ID (alternative to url)"
-          },
-          "language": {
-            "type": "string",
-            "description": "Preferred transcript/caption language code (e.g. en, es, pt, fr)"
-          },
-          "sourcePreference": {
-            "type": "string",
-            "enum": ["any", "manual", "generated"],
-            "description": "Caption source preference: any (default), manual (human-created), generated (auto-generated)"
-          },
-          "translateTo": {
-            "type": "string",
-            "description": "Target language code for YouTube caption translation"
-          },
-          "includeSegments": {
-            "type": "boolean",
-            "description": "Include timestamped transcript segments in output"
-          },
-          "format": {
-            "type": "string",
-            "enum": ["json", "text", "srt"],
-            "default": "json",
-            "description": "Output format: json (default), plain text, or SRT subtitle"
-          }
+          "url": {"type": "string", "description": "YouTube video URL"},
+          "videoId": {"type": "string", "description": "11-character YouTube video ID"},
+          "language": {"type": "string", "description": "Preferred language code"},
+          "sourcePreference": {"type": "string", "enum": ["any", "manual", "generated"], "description": "Caption source preference"},
+          "translateTo": {"type": "string", "description": "Translation target language code"},
+          "includeSegments": {"type": "boolean", "description": "Include timestamped segments"},
+          "format": {"type": "string", "enum": ["json", "text", "srt"], "default": "json"}
         }
       },
       "CaptionsRequest": {
         "type": "object",
-        "description": "Request body for youtube-captions and youtube-video-to-text",
         "properties": {
-          "url": {
-            "type": "string",
-            "description": "YouTube video URL (youtube.com/watch, youtu.be, shorts, embed, live)"
-          },
-          "videoId": {
-            "type": "string",
-            "description": "11-character YouTube video ID (alternative to url)"
-          },
-          "language": {
-            "type": "string",
-            "description": "Preferred captions/transcript language code (e.g. en, es, pt, fr)"
-          },
-          "includeSegments": {
-            "type": "boolean",
-            "description": "Include timestamped caption segments in output"
-          },
-          "format": {
-            "type": "string",
-            "enum": ["json", "text", "srt"],
-            "default": "json",
-            "description": "Output format: json (default), plain text, or SRT subtitle"
-          }
+          "url": {"type": "string", "description": "YouTube video URL"},
+          "videoId": {"type": "string", "description": "11-character YouTube video ID"},
+          "language": {"type": "string", "description": "Preferred language code"},
+          "includeSegments": {"type": "boolean", "description": "Include timestamped segments"},
+          "format": {"type": "string", "enum": ["json", "text", "srt"], "default": "json"}
+        }
+      },
+      "MetadataRequest": {
+        "type": "object",
+        "properties": {
+          "url": {"type": "string", "description": "YouTube video URL"},
+          "videoId": {"type": "string", "description": "11-character YouTube video ID"}
+        }
+      },
+      "BatchRequest": {
+        "type": "object",
+        "required": ["videos"],
+        "properties": {
+          "videos": {"type": "array", "minItems": 2, "maxItems": 3, "description": "2 or 3 YouTube URLs/video IDs", "items": {"type": "string"}},
+          "language": {"type": "string", "description": "Default preferred language"}
+        }
+      },
+      "BasicResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "videoId": {"type": "string"},
+          "transcript": {"type": "string"},
+          "wordCount": {"type": "integer"}
         }
       },
       "TranscriptResponse": {
         "type": "object",
         "properties": {
-          "success": { "type": "boolean", "description": "Whether the transcript was extracted successfully" },
-          "videoId": { "type": "string", "description": "YouTube video ID" },
-          "videoUrl": { "type": "string", "description": "Canonical YouTube video URL" },
-          "language": { "type": "string", "description": "Transcript language code" },
-          "languageName": { "type": "string", "description": "Transcript language display name" },
-          "autoGenerated": { "type": "boolean", "description": "Whether the captions were auto-generated by YouTube" },
-          "sourcePreference": { "type": "string", "description": "Caption source used (any, manual, generated)" },
-          "translated": { "type": "boolean", "description": "Whether the transcript was translated" },
-          "translateTo": { "type": "string", "description": "Target translation language code if translated" },
-          "format": { "type": "string", "description": "Output format used" },
-          "transcript": { "type": "string", "description": "Full transcript/caption text" },
-          "formatted": { "type": "string", "description": "Formatted output text (plain text or SRT depending on format parameter)" },
-          "wordCount": { "type": "integer", "description": "Number of words in the transcript" },
-          "characterCount": { "type": "integer", "description": "Number of characters in the transcript" },
-          "segments": {
-            "type": "array",
-            "description": "Timestamped transcript segments (included when includeSegments=true or format=srt)",
-            "items": {
-              "type": "object",
-              "properties": {
-                "text": { "type": "string" },
-                "offsetMs": { "type": "integer", "description": "Start time in milliseconds" },
-                "durationMs": { "type": "integer", "description": "Duration in milliseconds" }
-              }
-            }
-          },
-          "fetchedAt": { "type": "string", "description": "ISO 8601 timestamp of when the transcript was fetched" }
+          "success": {"type": "boolean"},
+          "videoId": {"type": "string"},
+          "videoUrl": {"type": "string"},
+          "language": {"type": "string"},
+          "languageName": {"type": "string"},
+          "autoGenerated": {"type": "boolean"},
+          "sourcePreference": {"type": "string"},
+          "translated": {"type": "boolean"},
+          "translateTo": {"type": "string"},
+          "format": {"type": "string"},
+          "transcript": {"type": "string"},
+          "formatted": {"type": "string"},
+          "wordCount": {"type": "integer"},
+          "characterCount": {"type": "integer"},
+          "segments": {"type": "array", "items": {"type": "object", "properties": {"text": {"type": "string"}, "offsetMs": {"type": "integer"}, "durationMs": {"type": "integer"}}}},
+          "fetchedAt": {"type": "string"}
+        }
+      },
+      "MetadataResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "videoId": {"type": "string"},
+          "videoUrl": {"type": "string"},
+          "title": {"type": "string"},
+          "channelName": {"type": "string"},
+          "channelUrl": {"type": "string"},
+          "thumbnailUrl": {"type": "string"},
+          "thumbnailWidth": {"type": "integer"},
+          "thumbnailHeight": {"type": "integer"},
+          "providerName": {"type": "string"},
+          "providerUrl": {"type": "string"},
+          "fetchedAt": {"type": "string"}
+        }
+      },
+      "BatchResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "requested": {"type": "integer"},
+          "successful": {"type": "integer"},
+          "failed": {"type": "integer"},
+          "results": {"type": "array", "items": {"type": "object"}},
+          "fetchedAt": {"type": "string"}
         }
       }
     }
