@@ -72,6 +72,35 @@
           }
         }
       }
+    },
+    {
+      "id": "extract-web",
+      "name": "Extract and Normalize Web Data",
+      "description": "Fetch a public HTTP(S) URL in real time and return clean normalized text or markdown, links, OpenGraph metadata, JSON-LD and provenance. Built for autonomous agent research, RAG and tool workflows. Costs $0.003 USDC on Base via x402. The same endpoint accepts MCP 2026-07-28 JSON-RPC calls using the extract_web tool.",
+      "method": "POST",
+      "endpoint": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/web-extract",
+      "mcp": {
+        "protocolVersion": "2026-07-28",
+        "tool": "extract_web",
+        "transport": "streamable-http-jsonrpc"
+      },
+      "parameters": {
+        "required": ["url"],
+        "optional": ["format", "includeLinks", "includeMetadata", "maxChars"]
+      },
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "url": {"type": "string", "description": "Public HTTP(S) URL"},
+            "format": {"type": "string", "enum": ["json", "text", "markdown"]},
+            "includeLinks": {"type": "boolean"},
+            "includeMetadata": {"type": "boolean"},
+            "maxChars": {"type": "integer", "minimum": 500, "maximum": 100000}
+          },
+          "required": ["url"]
+        }
+      }
     }
   ]
 }

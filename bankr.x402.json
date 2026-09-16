@@ -232,6 +232,43 @@
           }
         }
       }
+    },
+    "web-extract": {
+      "description": "Real-time web data extraction and normalization for autonomous AI agents. Fetch a public web URL and return clean text or markdown plus links, metadata, JSON-LD and provenance. Supports direct JSON requests and MCP 2026-07-28 JSON-RPC tool calls with the extract_web tool.",
+      "price": "0.003",
+      "methods": ["POST"],
+      "category": "data",
+      "tags": ["web extraction", "web scraping", "web data", "clean text", "markdown", "metadata", "json-ld", "mcp", "model context protocol", "ai agent", "agent tool", "x402", "usdc", "base", "real time"],
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "url": {"type": "string", "description": "Public HTTP(S) URL to fetch"},
+            "format": {"type": "string", "enum": ["json", "text", "markdown"], "description": "Output format; default json"},
+            "includeLinks": {"type": "boolean", "description": "Include up to 200 normalized absolute links; default true"},
+            "includeMetadata": {"type": "boolean", "description": "Include canonical, author, published date, OpenGraph and JSON-LD; default true"},
+            "maxChars": {"type": "integer", "minimum": 500, "maximum": 100000, "description": "Maximum extracted characters; default 30000"}
+          },
+          "required": ["url"]
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "sourceUrl": {"type": "string"},
+            "finalUrl": {"type": "string"},
+            "fetchedAt": {"type": "string"},
+            "title": {"type": ["string", "null"]},
+            "description": {"type": ["string", "null"]},
+            "language": {"type": ["string", "null"]},
+            "contentType": {"type": "string"},
+            "text": {"type": "string"},
+            "links": {"type": "array", "items": {"type": "object"}},
+            "metadata": {"type": "object"},
+            "stats": {"type": "object"}
+          }
+        }
+      }
     }
   }
 }

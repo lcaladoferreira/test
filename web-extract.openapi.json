@@ -1,0 +1,142 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Agent Web Extract x402 API",
+    "version": "1.0.0",
+    "description": "Paid real-time public web extraction and normalization for autonomous agents. Direct JSON and MCP 2026-07-28 JSON-RPC share one x402 endpoint."
+  },
+  "servers": [
+    {
+      "url": "https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb"
+    }
+  ],
+  "paths": {
+    "/web-extract": {
+      "post": {
+        "operationId": "extractWeb",
+        "summary": "Extract and normalize a public web URL",
+        "description": "Costs 0.003 USDC on Base via x402. Send once without payment to receive the x402 challenge, then retry with a valid x402 payment proof.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtractRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "url": "https://example.com/article",
+                    "format": "json",
+                    "includeLinks": true,
+                    "includeMetadata": true,
+                    "maxChars": 30000
+                  }
+                },
+                "mcpToolCall": {
+                  "value": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {
+                      "name": "extract_web",
+                      "arguments": {
+                        "url": "https://example.com/article",
+                        "format": "json"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful extraction or MCP JSON-RPC result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtractResponse"
+                }
+              },
+              "text/plain": { "schema": { "type": "string" } },
+              "text/markdown": { "schema": { "type": "string" } }
+            }
+          },
+          "400": { "description": "Invalid or unsafe request" },
+          "402": { "description": "x402 payment required" },
+          "413": { "description": "Upstream response too large" },
+          "415": { "description": "Unsupported upstream content type" },
+          "422": { "description": "Upstream/extraction failure" },
+          "504": { "description": "Upstream timeout" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ExtractRequest": {
+        "type": "object",
+        "required": ["url"],
+        "additionalProperties": false,
+        "properties": {
+          "url": { "type": "string", "format": "uri", "description": "Public HTTP(S) URL" },
+          "format": { "type": "string", "enum": ["json", "text", "markdown"], "default": "json" },
+          "includeLinks": { "type": "boolean", "default": true },
+          "includeMetadata": { "type": "boolean", "default": true },
+          "maxChars": { "type": "integer", "minimum": 500, "maximum": 100000, "default": 30000 }
+        }
+      },
+      "ExtractResponse": {
+        "type": "object",
+        "required": ["success", "sourceUrl", "finalUrl", "fetchedAt", "contentType", "text", "links", "metadata", "stats"],
+        "properties": {
+          "success": { "type": "boolean", "const": true },
+          "sourceUrl": { "type": "string", "format": "uri" },
+          "finalUrl": { "type": "string", "format": "uri" },
+          "fetchedAt": { "type": "string", "format": "date-time" },
+          "title": { "type": ["string", "null"] },
+          "description": { "type": ["string", "null"] },
+          "language": { "type": ["string", "null"] },
+          "contentType": { "type": "string" },
+          "text": { "type": "string" },
+          "data": {},
+          "links": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["text", "url"],
+              "properties": {
+                "text": { "type": "string" },
+                "url": { "type": "string", "format": "uri" }
+              }
+            }
+          },
+          "metadata": { "type": "object" },
+          "stats": {
+            "type": "object",
+            "properties": {
+              "httpStatus": { "type": "integer" },
+              "bytes": { "type": "integer" },
+              "characters": { "type": "integer" },
+              "durationMs": { "type": "integer" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-x402": {
+    "version": 2,
+    "network": "eip155:8453",
+    "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "currency": "USDC",
+    "price": "0.003",
+    "payTo": "0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb",
+    "mcp": {
+      "protocolVersion": "2026-07-28",
+      "tool": "extract_web"
+    }
+  }
+}
