@@ -4,20 +4,7 @@
     "title": "YouTube Transcript APIs for AI Agents",
     "version": "1.1.0",
     "description": "Machine-payable YouTube transcript, captions, subtitles, metadata and video-to-text APIs for AI agents. No signup or API key. Payment via x402 using USDC on Base.",
-    "x-guidance": {
-      "useWhen": "An agent already has one or more YouTube URLs/video IDs and needs transcript text, captions, subtitles, metadata or video-to-text for RAG, LLM context, research, summarization, indexing or automation.",
-      "doNotUseWhen": "The task is to search YouTube, upload/modify YouTube content, or retrieve unrelated web data.",
-      "routeSelection": {
-        "youtube-transcript-basic": "Cheapest route for simple transcript text.",
-        "youtube-transcript": "Recommended full route for timestamps, source preference, translation and JSON/text/SRT output.",
-        "youtube-captions": "Use when the intent explicitly asks for captions.",
-        "youtube-subtitles": "Use when the intent explicitly asks for subtitles or SRT.",
-        "youtube-video-to-text": "Use for video-to-text or RAG ingestion phrasing.",
-        "youtube-metadata": "Use when only title/channel/thumbnail metadata is needed.",
-        "youtube-transcript-batch": "Use for 2 or 3 videos in one request."
-      },
-      "payment": "Call the route, receive HTTP 402 payment requirements, pay USDC on Base with an x402 client, then retry with payment proof."
-    },
+    "x-guidance": "Send a POST JSON body with url or videoId to a single-video route; use videos with 2 or 3 items for the batch route. Read the runtime HTTP 402 payment requirements before authorizing USDC payment on Base. Use includeSegments for timestamps. Runtime availability and payment requirements are authoritative.",
     "contact": {
       "name": "LCF Consulting",
       "url": "https://github.com/lcaladoferreira/test"
@@ -35,15 +22,60 @@
         "operationId": "youtubeTranscriptBasic",
         "summary": "Get a low-cost YouTube transcript",
         "description": "Cheapest transcript route for simple text extraction, RAG ingestion and summarization.",
-        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.0011"},
-        "tags": ["youtube", "transcript", "rag", "ai-agent"],
-        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BasicRequest"}}}},
+        "x-payment-info": {
+          "protocol": "x402",
+          "network": "Base",
+          "currency": "USDC",
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.0011"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "tags": [
+          "youtube",
+          "transcript",
+          "rag",
+          "ai-agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BasicRequest"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {"description": "Transcript delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BasicResponse"}}}},
-          "402": {"description": "Payment Required — x402 USDC on Base"},
-          "400": {"description": "Invalid input"},
-          "405": {"description": "POST required"},
-          "422": {"description": "Transcript unavailable"}
+          "200": {
+            "description": "Transcript delivered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "402": {
+            "description": "Payment Required — x402 USDC on Base"
+          },
+          "405": {
+            "description": "POST required"
+          },
+          "422": {
+            "description": "Transcript unavailable"
+          }
         }
       }
     },
@@ -52,15 +84,62 @@
         "operationId": "youtubeTranscript",
         "summary": "Get full YouTube transcript with timestamps and translation",
         "description": "Full-featured transcript extraction with language selection, manual/auto caption preference, optional translation, timestamped segments and JSON/text/SRT output.",
-        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.004"},
-        "tags": ["youtube", "transcript", "captions", "subtitles", "rag", "ai-agent"],
-        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TranscriptRequest"}}}},
+        "x-payment-info": {
+          "protocol": "x402",
+          "network": "Base",
+          "currency": "USDC",
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.004"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "tags": [
+          "youtube",
+          "transcript",
+          "captions",
+          "subtitles",
+          "rag",
+          "ai-agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranscriptRequest"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {"description": "Transcript delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TranscriptResponse"}}}},
-          "402": {"description": "Payment Required — x402 USDC on Base"},
-          "400": {"description": "Invalid input"},
-          "405": {"description": "POST required"},
-          "422": {"description": "Transcript unavailable"}
+          "200": {
+            "description": "Transcript delivered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "402": {
+            "description": "Payment Required — x402 USDC on Base"
+          },
+          "405": {
+            "description": "POST required"
+          },
+          "422": {
+            "description": "Transcript unavailable"
+          }
         }
       }
     },
@@ -69,15 +148,60 @@
         "operationId": "youtubeCaptions",
         "summary": "Get YouTube captions",
         "description": "Extract captions with timestamps, language selection and JSON/text/SRT output.",
-        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.004"},
-        "tags": ["youtube", "captions", "transcript", "ai-agent"],
-        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CaptionsRequest"}}}},
+        "x-payment-info": {
+          "protocol": "x402",
+          "network": "Base",
+          "currency": "USDC",
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.004"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "tags": [
+          "youtube",
+          "captions",
+          "transcript",
+          "ai-agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptionsRequest"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {"description": "Captions delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TranscriptResponse"}}}},
-          "402": {"description": "Payment Required — x402 USDC on Base"},
-          "400": {"description": "Invalid input"},
-          "405": {"description": "POST required"},
-          "422": {"description": "Captions unavailable"}
+          "200": {
+            "description": "Captions delivered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "402": {
+            "description": "Payment Required — x402 USDC on Base"
+          },
+          "405": {
+            "description": "POST required"
+          },
+          "422": {
+            "description": "Captions unavailable"
+          }
         }
       }
     },
@@ -86,15 +210,60 @@
         "operationId": "youtubeSubtitles",
         "summary": "Get YouTube subtitles or SRT",
         "description": "Extract subtitles with timestamps, language selection and JSON/text/SRT output.",
-        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.004"},
-        "tags": ["youtube", "subtitles", "srt", "ai-agent"],
-        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CaptionsRequest"}}}},
+        "x-payment-info": {
+          "protocol": "x402",
+          "network": "Base",
+          "currency": "USDC",
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.004"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "tags": [
+          "youtube",
+          "subtitles",
+          "srt",
+          "ai-agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptionsRequest"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {"description": "Subtitles delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TranscriptResponse"}}}},
-          "402": {"description": "Payment Required — x402 USDC on Base"},
-          "400": {"description": "Invalid input"},
-          "405": {"description": "POST required"},
-          "422": {"description": "Subtitles unavailable"}
+          "200": {
+            "description": "Subtitles delivered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "402": {
+            "description": "Payment Required — x402 USDC on Base"
+          },
+          "405": {
+            "description": "POST required"
+          },
+          "422": {
+            "description": "Subtitles unavailable"
+          }
         }
       }
     },
@@ -103,15 +272,61 @@
         "operationId": "youtubeVideoToText",
         "summary": "Convert YouTube video to text",
         "description": "Convert a YouTube URL into clean transcript text for RAG, research, indexing and summarization.",
-        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.004"},
-        "tags": ["youtube", "video-to-text", "transcript", "rag", "ai-agent"],
-        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CaptionsRequest"}}}},
+        "x-payment-info": {
+          "protocol": "x402",
+          "network": "Base",
+          "currency": "USDC",
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.004"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "tags": [
+          "youtube",
+          "video-to-text",
+          "transcript",
+          "rag",
+          "ai-agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptionsRequest"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {"description": "Video text delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TranscriptResponse"}}}},
-          "402": {"description": "Payment Required — x402 USDC on Base"},
-          "400": {"description": "Invalid input"},
-          "405": {"description": "POST required"},
-          "422": {"description": "Video text unavailable"}
+          "200": {
+            "description": "Video text delivered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "402": {
+            "description": "Payment Required — x402 USDC on Base"
+          },
+          "405": {
+            "description": "POST required"
+          },
+          "422": {
+            "description": "Video text unavailable"
+          }
         }
       }
     },
@@ -120,15 +335,60 @@
         "operationId": "youtubeMetadata",
         "summary": "Get YouTube video metadata",
         "description": "Return title, channel, canonical URL and thumbnail metadata without transcript extraction.",
-        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.002"},
-        "tags": ["youtube", "metadata", "video-metadata", "ai-agent"],
-        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/MetadataRequest"}}}},
+        "x-payment-info": {
+          "protocol": "x402",
+          "network": "Base",
+          "currency": "USDC",
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.002"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "tags": [
+          "youtube",
+          "metadata",
+          "video-metadata",
+          "ai-agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetadataRequest"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {"description": "Metadata delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/MetadataResponse"}}}},
-          "402": {"description": "Payment Required — x402 USDC on Base"},
-          "400": {"description": "Invalid input"},
-          "405": {"description": "POST required"},
-          "422": {"description": "Metadata unavailable"}
+          "200": {
+            "description": "Metadata delivered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetadataResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "402": {
+            "description": "Payment Required — x402 USDC on Base"
+          },
+          "405": {
+            "description": "POST required"
+          },
+          "422": {
+            "description": "Metadata unavailable"
+          }
         }
       }
     },
@@ -137,14 +397,58 @@
         "operationId": "youtubeTranscriptBatch",
         "summary": "Get transcripts for 2 or 3 YouTube videos",
         "description": "Batch transcript route for RAG, research and dataset workflows.",
-        "x-payment-info": {"protocol": "x402", "network": "Base", "currency": "USDC", "price": "0.010"},
-        "tags": ["youtube", "transcript", "batch", "rag", "ai-agent"],
-        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BatchRequest"}}}},
+        "x-payment-info": {
+          "protocol": "x402",
+          "network": "Base",
+          "currency": "USDC",
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.010"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "tags": [
+          "youtube",
+          "transcript",
+          "batch",
+          "rag",
+          "ai-agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchRequest"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {"description": "Batch results delivered", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BatchResponse"}}}},
-          "402": {"description": "Payment Required — x402 USDC on Base"},
-          "400": {"description": "videos must contain 2 or 3 valid entries"},
-          "405": {"description": "POST required"}
+          "200": {
+            "description": "Batch results delivered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "videos must contain 2 or 3 valid entries"
+          },
+          "402": {
+            "description": "Payment Required — x402 USDC on Base"
+          },
+          "405": {
+            "description": "POST required"
+          }
         }
       }
     }
@@ -154,104 +458,276 @@
       "BasicRequest": {
         "type": "object",
         "properties": {
-          "url": {"type": "string", "description": "YouTube video URL"},
-          "videoId": {"type": "string", "description": "11-character YouTube video ID"},
-          "language": {"type": "string", "description": "Preferred transcript language code"}
+          "url": {
+            "type": "string",
+            "description": "YouTube video URL"
+          },
+          "videoId": {
+            "type": "string",
+            "description": "11-character YouTube video ID"
+          },
+          "language": {
+            "type": "string",
+            "description": "Preferred transcript language code"
+          }
         }
       },
       "TranscriptRequest": {
         "type": "object",
         "properties": {
-          "url": {"type": "string", "description": "YouTube video URL"},
-          "videoId": {"type": "string", "description": "11-character YouTube video ID"},
-          "language": {"type": "string", "description": "Preferred language code"},
-          "sourcePreference": {"type": "string", "enum": ["any", "manual", "generated"], "description": "Caption source preference"},
-          "translateTo": {"type": "string", "description": "Translation target language code"},
-          "includeSegments": {"type": "boolean", "description": "Include timestamped segments"},
-          "format": {"type": "string", "enum": ["json", "text", "srt"], "default": "json"}
+          "url": {
+            "type": "string",
+            "description": "YouTube video URL"
+          },
+          "videoId": {
+            "type": "string",
+            "description": "11-character YouTube video ID"
+          },
+          "language": {
+            "type": "string",
+            "description": "Preferred language code"
+          },
+          "sourcePreference": {
+            "type": "string",
+            "enum": [
+              "any",
+              "manual",
+              "generated"
+            ],
+            "description": "Caption source preference"
+          },
+          "translateTo": {
+            "type": "string",
+            "description": "Translation target language code"
+          },
+          "includeSegments": {
+            "type": "boolean",
+            "description": "Include timestamped segments"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "json",
+              "text",
+              "srt"
+            ],
+            "default": "json"
+          }
         }
       },
       "CaptionsRequest": {
         "type": "object",
         "properties": {
-          "url": {"type": "string", "description": "YouTube video URL"},
-          "videoId": {"type": "string", "description": "11-character YouTube video ID"},
-          "language": {"type": "string", "description": "Preferred language code"},
-          "includeSegments": {"type": "boolean", "description": "Include timestamped segments"},
-          "format": {"type": "string", "enum": ["json", "text", "srt"], "default": "json"}
+          "url": {
+            "type": "string",
+            "description": "YouTube video URL"
+          },
+          "videoId": {
+            "type": "string",
+            "description": "11-character YouTube video ID"
+          },
+          "language": {
+            "type": "string",
+            "description": "Preferred language code"
+          },
+          "includeSegments": {
+            "type": "boolean",
+            "description": "Include timestamped segments"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "json",
+              "text",
+              "srt"
+            ],
+            "default": "json"
+          }
         }
       },
       "MetadataRequest": {
         "type": "object",
         "properties": {
-          "url": {"type": "string", "description": "YouTube video URL"},
-          "videoId": {"type": "string", "description": "11-character YouTube video ID"}
+          "url": {
+            "type": "string",
+            "description": "YouTube video URL"
+          },
+          "videoId": {
+            "type": "string",
+            "description": "11-character YouTube video ID"
+          }
         }
       },
       "BatchRequest": {
         "type": "object",
-        "required": ["videos"],
+        "required": [
+          "videos"
+        ],
         "properties": {
-          "videos": {"type": "array", "minItems": 2, "maxItems": 3, "description": "2 or 3 YouTube URLs/video IDs", "items": {"type": "string"}},
-          "language": {"type": "string", "description": "Default preferred language"}
+          "videos": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 3,
+            "description": "2 or 3 YouTube URLs/video IDs",
+            "items": {
+              "type": "string"
+            }
+          },
+          "language": {
+            "type": "string",
+            "description": "Default preferred language"
+          }
         }
       },
       "BasicResponse": {
         "type": "object",
         "properties": {
-          "success": {"type": "boolean"},
-          "videoId": {"type": "string"},
-          "transcript": {"type": "string"},
-          "wordCount": {"type": "integer"}
+          "success": {
+            "type": "boolean"
+          },
+          "videoId": {
+            "type": "string"
+          },
+          "transcript": {
+            "type": "string"
+          },
+          "wordCount": {
+            "type": "integer"
+          }
         }
       },
       "TranscriptResponse": {
         "type": "object",
         "properties": {
-          "success": {"type": "boolean"},
-          "videoId": {"type": "string"},
-          "videoUrl": {"type": "string"},
-          "language": {"type": "string"},
-          "languageName": {"type": "string"},
-          "autoGenerated": {"type": "boolean"},
-          "sourcePreference": {"type": "string"},
-          "translated": {"type": "boolean"},
-          "translateTo": {"type": "string"},
-          "format": {"type": "string"},
-          "transcript": {"type": "string"},
-          "formatted": {"type": "string"},
-          "wordCount": {"type": "integer"},
-          "characterCount": {"type": "integer"},
-          "segments": {"type": "array", "items": {"type": "object", "properties": {"text": {"type": "string"}, "offsetMs": {"type": "integer"}, "durationMs": {"type": "integer"}}}},
-          "fetchedAt": {"type": "string"}
+          "success": {
+            "type": "boolean"
+          },
+          "videoId": {
+            "type": "string"
+          },
+          "videoUrl": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "languageName": {
+            "type": "string"
+          },
+          "autoGenerated": {
+            "type": "boolean"
+          },
+          "sourcePreference": {
+            "type": "string"
+          },
+          "translated": {
+            "type": "boolean"
+          },
+          "translateTo": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "transcript": {
+            "type": "string"
+          },
+          "formatted": {
+            "type": "string"
+          },
+          "wordCount": {
+            "type": "integer"
+          },
+          "characterCount": {
+            "type": "integer"
+          },
+          "segments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string"
+                },
+                "offsetMs": {
+                  "type": "integer"
+                },
+                "durationMs": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "fetchedAt": {
+            "type": "string"
+          }
         }
       },
       "MetadataResponse": {
         "type": "object",
         "properties": {
-          "success": {"type": "boolean"},
-          "videoId": {"type": "string"},
-          "videoUrl": {"type": "string"},
-          "title": {"type": "string"},
-          "channelName": {"type": "string"},
-          "channelUrl": {"type": "string"},
-          "thumbnailUrl": {"type": "string"},
-          "thumbnailWidth": {"type": "integer"},
-          "thumbnailHeight": {"type": "integer"},
-          "providerName": {"type": "string"},
-          "providerUrl": {"type": "string"},
-          "fetchedAt": {"type": "string"}
+          "success": {
+            "type": "boolean"
+          },
+          "videoId": {
+            "type": "string"
+          },
+          "videoUrl": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "channelName": {
+            "type": "string"
+          },
+          "channelUrl": {
+            "type": "string"
+          },
+          "thumbnailUrl": {
+            "type": "string"
+          },
+          "thumbnailWidth": {
+            "type": "integer"
+          },
+          "thumbnailHeight": {
+            "type": "integer"
+          },
+          "providerName": {
+            "type": "string"
+          },
+          "providerUrl": {
+            "type": "string"
+          },
+          "fetchedAt": {
+            "type": "string"
+          }
         }
       },
       "BatchResponse": {
         "type": "object",
         "properties": {
-          "success": {"type": "boolean"},
-          "requested": {"type": "integer"},
-          "successful": {"type": "integer"},
-          "failed": {"type": "integer"},
-          "results": {"type": "array", "items": {"type": "object"}},
-          "fetchedAt": {"type": "string"}
+          "success": {
+            "type": "boolean"
+          },
+          "requested": {
+            "type": "integer"
+          },
+          "successful": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "fetchedAt": {
+            "type": "string"
+          }
         }
       }
     }
