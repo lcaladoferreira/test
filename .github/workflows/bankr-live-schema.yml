@@ -3,7 +3,12 @@ name: Probe live Bankr x402 schema
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     paths:
+      - 'bankr.x402.json'
+      - 'openapi.json'
+      - 'SKILL.md'
+      - '.well-known/x402.json'
       - '.github/workflows/bankr-live-schema.yml'
 
 jobs:
@@ -17,7 +22,7 @@ jobs:
         run: |
           set -euo pipefail
           BASE="https://x402.bankr.bot/$WALLET"
-          for name in youtube-transcript youtube-captions youtube-video-to-text; do
+          for name in youtube-transcript-basic youtube-transcript youtube-captions youtube-subtitles youtube-video-to-text youtube-metadata youtube-transcript-batch; do
             echo "===== SCHEMA: $name ====="
             npx --yes @bankr/cli x402 schema "$BASE/$name" --raw || true
           done
@@ -27,8 +32,12 @@ jobs:
         run: |
           set -euo pipefail
           BASE="https://x402.bankr.bot/$WALLET"
-          for name in youtube-transcript youtube-captions youtube-video-to-text; do
-            code=$(curl -sS -o /tmp/body.json -w '%{http_code}' -X POST "$BASE/$name" -H 'content-type: application/json' --data '{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}')
+
+          probe() {
+            local name="$1"
+            local body="$2"
+            local code
+            code=$(curl -sS -o /tmp/body.json -w '%{http_code}' -X POST "$BASE/$name" -H 'content-type: application/json' --data "$body")
             echo "HTTP $name=$code"
             if [ "$code" = '402' ]; then
               echo "  STATUS: ACTIVE (returns 402 payment challenge)"
@@ -37,7 +46,18 @@ jobs:
               head -c 500 /tmp/body.json || true
             fi
             echo ""
-          done
+          }
+
+          SINGLE='{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}'
+          BATCH='{"videos":["https://www.youtube.com/watch?v=dQw4w9WgXcQ","https://www.youtube.com/watch?v=9bZkp7q19f0"]}'
+
+          probe youtube-transcript-basic "$SINGLE"
+          probe youtube-transcript "$SINGLE"
+          probe youtube-captions "$SINGLE"
+          probe youtube-subtitles "$SINGLE"
+          probe youtube-video-to-text "$SINGLE"
+          probe youtube-metadata "$SINGLE"
+          probe youtube-transcript-batch "$BATCH"
 
       - name: Probe Bankr marketplace search
         shell: bash
@@ -47,7 +67,7 @@ jobs:
           echo "MARKETPLACE SEARCH PROBE"
           echo "Wallet: $WALLET"
           echo "========================================="
-          for q in 'youtube transcript' 'youtube captions' 'youtube subtitles' 'video transcript' 'youtube video to text'; do
+          for q in 'youtube transcript' 'cheap youtube transcript' 'youtube captions' 'youtube subtitles' 'youtube metadata' 'youtube video to text' 'batch youtube transcript' 'rag youtube'; do
             echo "===== SEARCH: \"$q\" ====="
             npx --yes @bankr/cli x402 search "$q" --raw 2>&1 || true
             echo ""
