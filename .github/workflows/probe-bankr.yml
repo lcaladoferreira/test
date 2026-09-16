@@ -1,0 +1,22 @@
+name: Probe Agent Web Extract Bankr route
+on:
+  push:
+    branches: [agent-web-extract-standalone]
+    paths: ['.github/workflows/probe-bankr.yml']
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe live Bankr route
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://x402.bankr.bot/0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb/web-extract'
+          BODY='{"url":"https://example.com","format":"json"}'
+          code=$(curl -sS -D /tmp/h -o /tmp/b -w '%{http_code}' -X POST "$URL" -H 'content-type: application/json' --data "$BODY")
+          echo "HTTP=$code"
+          cat /tmp/h
+          head -c 2000 /tmp/b || true
+          echo
+          test "$code" = '402'
