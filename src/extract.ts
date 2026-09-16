@@ -9,7 +9,7 @@ export type ExtractInput = { url?: string; format?: "json" | "text" | "markdown"
 function normalize(input: string) { return input.replace(/\r/g, "").replace(/[\t ]+/g, " ").replace(/ *\n */g, "\n").replace(/\n{3,}/g, "\n\n").trim(); }
 function absolute(base: URL, href?: string) { if (!href) return null; try { const u = new URL(href, base); return u.protocol === "http:" || u.protocol === "https:" ? u.toString() : null; } catch { return null; } }
 
-export function parseHtml(html: string, finalUrl: URL, maxChars = LIMITS.defaultChars, includeLinks = true, includeMetadata = true) {
+export function parseHtml(html: string, finalUrl: URL, maxChars: number = LIMITS.defaultChars, includeLinks = true, includeMetadata = true) {
   const $ = load(html);
   const title = normalize($("title").first().text() || $("meta[property='og:title']").attr("content") || "") || null;
   const description = normalize($("meta[name='description']").attr("content") || $("meta[property='og:description']").attr("content") || "") || null;
@@ -32,7 +32,7 @@ export function parseHtml(html: string, finalUrl: URL, maxChars = LIMITS.default
   const text = normalize(textRoot.text()).slice(0,maxChars);
   if (!text) throw new HttpError(422,"NO_EXTRACTABLE_TEXT","No readable text could be extracted");
   const td = new TurndownService({ headingStyle:"atx", bulletListMarker:"-", codeBlockStyle:"fenced" });
-  td.remove(["script","style","noscript","iframe","svg","canvas","form"]);
+  td.remove(["script","style","noscript","iframe","svg","canvas","form"] as any);
   const markdown = normalize(td.turndown(root.html() || "")).slice(0,maxChars);
   return { title, description, language, text, markdown, links, metadata: includeMetadata ? { canonical, author, publishedAt, openGraph, jsonLd } : {} };
 }
