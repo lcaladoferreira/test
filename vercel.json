@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {"api/*.ts": {"maxDuration": 20}},
+  "rewrites": [
+    {"source": "/", "destination": "/api/meta?doc=index"},
+    {"source": "/health", "destination": "/api/meta?doc=health"},
+    {"source": "/openapi.json", "destination": "/api/meta?doc=openapi"},
+    {"source": "/.well-known/x402.json", "destination": "/api/meta?doc=x402"},
+    {"source": "/.well-known/agent-card.json", "destination": "/api/meta?doc=agent"},
+    {"source": "/SKILL.md", "destination": "/api/meta?doc=skill"},
+    {"source": "/llms.txt", "destination": "/api/meta?doc=llms"},
+    {"source": "/mcp", "destination": "/api/mcp"}
+  ]
+}

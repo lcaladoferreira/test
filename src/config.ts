@@ -1,0 +1,10 @@
+export const SERVICE_NAME = "Agent Web Extract";
+export const VERSION = "1.0.0";
+export const NETWORK = "eip155:8453" as const;
+export const ASSET = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+export const ASSET_SYMBOL = "USDC";
+export const PAY_TO = "0xe100c45ad23fa81aeca03ce61871e2ea3cf8e9eb" as `0x${string}`;
+export const PRICE = "$0.003";
+export const PRICE_USDC = "0.003";
+export const FACILITATOR_URL = process.env.X402_FACILITATOR_URL || "https://facilitator.payai.network";
+export const LIMITS = { timeoutMs: 15_000, maxBytes: 5 * 1024 * 1024, maxRedirects: 4, minChars: 500, maxChars: 100_000, defaultChars: 30_000 } as const;

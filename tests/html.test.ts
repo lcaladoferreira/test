@@ -1,0 +1,4 @@
+import { describe,expect,it } from "vitest";
+import { parseHtml } from "../src/extract.js";
+
+describe("HTML normalization",()=>{it("extracts metadata, text and absolute links while removing noise",()=>{const html=`<html lang="en"><head><title>Example</title><meta name="description" content="Desc"><link rel="canonical" href="/story"><script type="application/ld+json">{"@type":"Article"}</script></head><body><nav>noise</nav><article><h1>Headline</h1><p>${"Readable content ".repeat(20)}</p><a href="/next">Next</a></article><footer>noise2</footer></body></html>`;const out=parseHtml(html,new URL("https://example.com/page"),30000,true,true);expect(out.title).toBe("Example");expect(out.text).toContain("Headline");expect(out.text).not.toContain("noise2");expect(out.links[0]?.url).toBe("https://example.com/next");expect(out.metadata.canonical).toBe("https://example.com/story")})});
